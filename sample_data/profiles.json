@@ -1,0 +1,50 @@
+{
+  "active-directory": {
+    "category": "Identity",
+    "subcategory": "Account lockout",
+    "cause": "Directory authentication is blocked by a lockout; stale credentials are one possible source.",
+    "action": "identity-review"
+  },
+  "vpn-troubleshooting": {
+    "category": "Network",
+    "subcategory": "VPN",
+    "cause": "Saved VPN credentials or a client authentication state may be stale after a password change.",
+    "action": "network-diagnostics"
+  },
+  "dns-troubleshooting": {
+    "category": "Network",
+    "subcategory": "DNS",
+    "cause": "An incorrect DNS server, stale cache or missing record may prevent name resolution.",
+    "action": "dns-diagnostics"
+  },
+  "printer-troubleshooting": {
+    "category": "Hardware",
+    "subcategory": "Printing",
+    "cause": "The printer connection, queue or spooler may be unavailable; confirm which layer is failing.",
+    "action": "spooler-review"
+  },
+  "windows-support": {
+    "category": "Endpoint",
+    "subcategory": "Windows 11",
+    "cause": "Low disk space, a recent change or resource pressure may be causing Windows performance issues.",
+    "action": "system-diagnostics"
+  },
+  "microsoft365": {
+    "category": "Identity",
+    "subcategory": "Microsoft 365",
+    "cause": "An expired sign-in session or a tenant authentication policy may be interrupting Outlook access.",
+    "action": "identity-review"
+  },
+  "network-drive": {
+    "category": "Access",
+    "subcategory": "Shared folder",
+    "cause": "An SMB session, group membership or share/NTFS permission mismatch may deny access.",
+    "action": "network-diagnostics"
+  },
+  "erp-access": {
+    "category": "Application",
+    "subcategory": "ERP",
+    "cause": "The ERP service, backend connectivity or application authorization may be failing.",
+    "action": "network-diagnostics"
+  }
+}

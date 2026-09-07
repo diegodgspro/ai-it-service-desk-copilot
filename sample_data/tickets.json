@@ -1,0 +1,82 @@
+[
+  {
+    "id": "INC-1041",
+    "title": "Account locked after password change",
+    "description": "My domain account is locked on LAB-PC-014. I changed my password yesterday and Windows now says the account is locked out. One user affected.",
+    "requester": "Sam Ellis",
+    "impact": "Low",
+    "urgency": "Medium",
+    "source": "mock",
+    "status": "Open"
+  },
+  {
+    "id": "INC-1042",
+    "title": "VPN authentication fails after password change",
+    "description": "VPN client rejects authentication after a Windows password change. Home internet works. Alex Morgan cannot access the internal ERP from LAB-LT-042 and a delivery deadline is approaching.",
+    "requester": "Alex Morgan",
+    "impact": "Low",
+    "urgency": "High",
+    "source": "mock",
+    "status": "Open"
+  },
+  {
+    "id": "INC-1043",
+    "title": "Internal portal hostname does not resolve",
+    "description": "The operations department cannot resolve portal.northstar.example. Access by the approved test IP 192.0.2.20 works. All department users are affected; a workaround exists.",
+    "requester": "Robin Bell",
+    "impact": "Medium",
+    "urgency": "Medium",
+    "source": "mock",
+    "status": "Open"
+  },
+  {
+    "id": "INC-1044",
+    "title": "Warehouse printer appears offline",
+    "description": "LAB-PRN-003 is offline and shipping documents are stuck in the print queue. Four warehouse staff are affected. Labels are needed before the next dispatch.",
+    "requester": "Casey Stone",
+    "impact": "Medium",
+    "urgency": "High",
+    "source": "mock",
+    "status": "Open"
+  },
+  {
+    "id": "INC-1045",
+    "title": "Windows 11 workstation is slow",
+    "description": "LAB-PC-025 is slow when opening applications. Windows 11 reports low disk space after an update. Only one employee is affected and another workstation is available.",
+    "requester": "Jamie Park",
+    "impact": "Low",
+    "urgency": "Low",
+    "source": "mock",
+    "status": "Open"
+  },
+  {
+    "id": "INC-1046",
+    "title": "Outlook repeatedly requests sign-in",
+    "description": "Outlook on LAB-LT-018 repeatedly asks for Microsoft 365 sign-in. Outlook on the web works for Taylor Reed. No other users have reported the issue.",
+    "requester": "Taylor Reed",
+    "impact": "Low",
+    "urgency": "Medium",
+    "source": "mock",
+    "status": "Open"
+  },
+  {
+    "id": "INC-1047",
+    "title": "Access denied to mapped finance drive",
+    "description": "Jordan Lee receives Access denied on \\\\files.northstar.example\\finance after a team move. Other network drives work. An authorized colleague can handle urgent requests.",
+    "requester": "Jordan Lee",
+    "impact": "Low",
+    "urgency": "Medium",
+    "source": "mock",
+    "status": "Open"
+  },
+  {
+    "id": "INC-1048",
+    "title": "ERP unavailable across all locations",
+    "description": "The fictional Northstar Demo ERP returns HTTP 503 for all locations. Order processing has stopped and there is no workaround. Started at 09:15 UTC.",
+    "requester": "Morgan Blake",
+    "impact": "High",
+    "urgency": "High",
+    "source": "mock",
+    "status": "Open"
+  }
+]

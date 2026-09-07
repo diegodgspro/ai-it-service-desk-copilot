@@ -1,0 +1,162 @@
+[
+  {
+    "text": "active directory account locked repeated failed domain logon",
+    "label": "active-directory"
+  },
+  {
+    "text": "domain user locked out after password change",
+    "label": "active-directory"
+  },
+  {
+    "text": "windows sign in account lockout on domain controller",
+    "label": "active-directory"
+  },
+  {
+    "text": "directory authentication account disabled or locked",
+    "label": "active-directory"
+  },
+  {
+    "text": "cannot logon domain account says locked",
+    "label": "active-directory"
+  },
+  {
+    "text": "vpn connection failed after changing password",
+    "label": "vpn-troubleshooting"
+  },
+  {
+    "text": "remote access vpn tunnel authentication rejected",
+    "label": "vpn-troubleshooting"
+  },
+  {
+    "text": "vpn client cannot connect gateway timeout",
+    "label": "vpn-troubleshooting"
+  },
+  {
+    "text": "vpn disconnect remote worker authentication error",
+    "label": "vpn-troubleshooting"
+  },
+  {
+    "text": "unable to establish corporate vpn tunnel",
+    "label": "vpn-troubleshooting"
+  },
+  {
+    "text": "dns server not responding hostname lookup failure",
+    "label": "dns-troubleshooting"
+  },
+  {
+    "text": "internal website name resolution fails but ip works",
+    "label": "dns-troubleshooting"
+  },
+  {
+    "text": "cannot resolve intranet hostname dns record",
+    "label": "dns-troubleshooting"
+  },
+  {
+    "text": "dns nxdomain on company network",
+    "label": "dns-troubleshooting"
+  },
+  {
+    "text": "network connectivity dns lookup timeout",
+    "label": "dns-troubleshooting"
+  },
+  {
+    "text": "printer offline cannot print documents queue stuck",
+    "label": "printer-troubleshooting"
+  },
+  {
+    "text": "print spooler service stopped jobs pending",
+    "label": "printer-troubleshooting"
+  },
+  {
+    "text": "network printer offline print queue error",
+    "label": "printer-troubleshooting"
+  },
+  {
+    "text": "printing fails printer unavailable",
+    "label": "printer-troubleshooting"
+  },
+  {
+    "text": "documents stuck in spooler printing queue",
+    "label": "printer-troubleshooting"
+  },
+  {
+    "text": "windows 11 slow laptop disk full low space",
+    "label": "windows-support"
+  },
+  {
+    "text": "windows desktop freezing high cpu memory",
+    "label": "windows-support"
+  },
+  {
+    "text": "windows update error computer performance",
+    "label": "windows-support"
+  },
+  {
+    "text": "windows 11 crashes blue screen system",
+    "label": "windows-support"
+  },
+  {
+    "text": "computer running slow storage drive nearly full",
+    "label": "windows-support"
+  },
+  {
+    "text": "outlook keeps asking password microsoft 365 login",
+    "label": "microsoft365"
+  },
+  {
+    "text": "microsoft 365 mfa authentication sign in error",
+    "label": "microsoft365"
+  },
+  {
+    "text": "outlook authentication loop office token expired",
+    "label": "microsoft365"
+  },
+  {
+    "text": "office 365 mailbox cannot sign in",
+    "label": "microsoft365"
+  },
+  {
+    "text": "outlook web access works desktop sign in fails",
+    "label": "microsoft365"
+  },
+  {
+    "text": "mapped network drive access denied shared folder",
+    "label": "network-drive"
+  },
+  {
+    "text": "smb file share permission denied unc path",
+    "label": "network-drive"
+  },
+  {
+    "text": "network drive disconnected file server access",
+    "label": "network-drive"
+  },
+  {
+    "text": "shared folder ntfs permissions cannot open",
+    "label": "network-drive"
+  },
+  {
+    "text": "mapped drive missing after login share access",
+    "label": "network-drive"
+  },
+  {
+    "text": "erp application unavailable all users order entry",
+    "label": "erp-access"
+  },
+  {
+    "text": "enterprise resource planning login server error",
+    "label": "erp-access"
+  },
+  {
+    "text": "erp access denied application role",
+    "label": "erp-access"
+  },
+  {
+    "text": "business application erp service unavailable",
+    "label": "erp-access"
+  },
+  {
+    "text": "erp application returns 503 backend connection",
+    "label": "erp-access"
+  }
+]
