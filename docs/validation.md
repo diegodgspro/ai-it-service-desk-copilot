@@ -17,13 +17,21 @@ Build validation date: 2026-09-07. Environment: Linux, Python 3.12.
 | Python syntax compilation | Passed |
 | Demonstration images | Six generated and visually inspected; they are authored previews, not UI screenshots |
 
+## Windows validation, 2026-09-07
+
+The user reported successfully running the application on Windows and passing all 29 tests in the active virtual environment. The report did not specify a Python patch version.
+
+During publication preparation, `.venv\Scripts\python.exe` was inspected directly: the project virtual environment reports **Python 3.13.15**. A separate run of `.\.venv\Scripts\python.exe -m pytest -q` returned **29 passed in 2.24s**. This patch version belongs to the inspected interpreter, not an assumption about the earlier user run. No application code changes were needed.
+
+Setup was checked against `requirements.txt` (Streamlit, scikit-learn and python-dotenv) and `requirements-dev.txt` (runtime requirements plus pytest). On Windows, install tests with `.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt`. Pillow and Playwright/Chromium are optional image utilities, not required for application startup or regression tests.
+
 ## Remaining checks and honest limits
 
 - **Browser visual QA / real UI screenshots:** blocked in this environment. The cloud browser could not access localhost; local Chromium download failed. Streamlit AppTest verifies widget behavior, not rendered layout. A screenshot utility and manual capture guide are included for the user's PC.
 - **Live Ollama generation:** not tested; no model was available. The actual HTTP adapter is implemented and contract-tested using mocked responses.
 - **PowerShell execution:** not tested on Windows. The dashboard never executes these scripts. Review and test dry-run / WhatIf behavior in an authorized lab before considering actual execution.
 - **ITSM production integrations:** not implemented. Only the session-local mock reads and writes tickets.
-- **Remote GitHub CI:** configured for Python 3.11 and 3.12, not run remotely before publication.
+- **Remote GitHub CI:** configured for Python 3.11, 3.12 and 3.13. Consult GitHub Actions for the result associated with each published commit.
 - **Screenshot utility:** provided for local use, not verified with an actual Chromium instance here.
 
 ## Interpretation

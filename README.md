@@ -28,17 +28,17 @@ This copilot puts support reasoning first: identify scope, inspect evidence, fol
 
 ## Run locally
 
-Python **3.11 or 3.12** recommended. Extract this repository and open a terminal inside `ai-it-service-desk-copilot`.
+Python **3.11, 3.12 or 3.13** supported by the CI matrix. Windows validation passed on Python 3.13. Extract this repository and open a terminal inside `ai-it-service-desk-copilot`.
 
 Windows PowerShell:
 
 ```powershell
-py -3.11 -m venv .venv
+py -3.13 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 .\.venv\Scripts\python.exe -m streamlit run app.py
 ```
 
-If Python 3.12 is installed, use `py -3.12` instead. Using the environment's executable avoids changing PowerShell activation policy.
+For Python 3.11 or 3.12, use `py -3.11` or `py -3.12` instead. Using the environment's executable avoids changing PowerShell activation policy.
 
 macOS / Linux:
 
@@ -129,7 +129,7 @@ python -m pip install -r requirements-dev.txt
 python -m pytest -q
 ```
 
-Use the virtual environment's Python executable on Windows. GitHub Actions is configured for Python 3.11 and 3.12; the remote workflow runs after you push. [Actual validation results and remaining checks](docs/validation.md).
+Use the virtual environment's Python executable on Windows. GitHub Actions is configured for Python 3.11, 3.12 and 3.13; the remote workflow runs after you push. [Actual validation results and remaining checks](docs/validation.md).
 
 ## Security and operational limits
 
@@ -143,25 +143,11 @@ The included images are authored previews based on actual local analysis output,
 
 [Six labeled demonstration images](docs/demo-images/README.md) · [Actual screenshot capture instructions](docs/screenshots/README.md) · [English LinkedIn post](docs/linkedin/post.md) · [Interview talking points](docs/interview-talking-points.md) · [Phase-by-phase verification](docs/development-phases.md)
 
-GitHub preparation, from the extracted project folder:
-
-```bash
-git init -b main
-git add .
-git status
-git commit -m "Build IT Service Desk Copilot portfolio MVP"
-```
-
-Review staged files for secrets. Create an empty GitHub repository named `ai-it-service-desk-copilot`, then use its actual URL:
-
-```bash
-git remote add origin https://github.com/YOUR_USERNAME/ai-it-service-desk-copilot.git
-git push -u origin main
-```
-
-Replace `[GITHUB_REPOSITORY_URL]` in the LinkedIn draft before publishing. Neither GitHub nor LinkedIn was published automatically.
+Repository: [diegodgspro/ai-it-service-desk-copilot](https://github.com/diegodgspro/ai-it-service-desk-copilot). LinkedIn publication remains a separate manual step.
 
 ## Next improvements
+
+See the [proposed free-plan web roadmap](docs/web-roadmap.md). The Python/Streamlit lab remains intact; no web migration or Cloudflare deployment is implemented in this phase.
 
 Independent, de-identified evaluation data; better uncertain/multi-issue routing; one sandbox ITSM adapter; measured technician review outcomes; durable storage and access controls only when deployment requires them.
 
