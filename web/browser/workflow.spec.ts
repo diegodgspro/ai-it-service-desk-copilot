@@ -5,6 +5,9 @@ test("review, simulate, invalidate and resolve an incident on desktop and mobile
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto("/");
+  await page
+    .getByRole("button", { name: "Enter local test workspace" })
+    .click();
   await expect(
     page.getByRole("heading", { name: "A clearer path to resolution." }),
   ).toBeVisible();
@@ -40,6 +43,9 @@ test("review, simulate, invalidate and resolve an incident on desktop and mobile
     page.getByText("Decision recorded: approved. No action was executed."),
   ).toBeVisible();
   await page.reload();
+  await page
+    .getByRole("button", { name: "Enter local test workspace" })
+    .click();
   await page.getByRole("button", { name: /INC-1044/ }).click();
   await expect(page.locator(".case-heading h2")).toHaveText(
     "Warehouse printer appears offline",
@@ -88,6 +94,9 @@ test("review, simulate, invalidate and resolve an incident on desktop and mobile
     "Handover saved to the incident history.",
   );
   await page.reload();
+  await page
+    .getByRole("button", { name: "Enter local test workspace" })
+    .click();
   await page.getByRole("button", { name: /INC-1044/ }).click();
   await expect(page.locator(".case-heading h2")).toHaveText(
     "Warehouse printer appears offline",

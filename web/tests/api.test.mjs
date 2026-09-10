@@ -6,16 +6,19 @@ import { join, resolve } from "node:path";
 import { existsSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { build } from "esbuild";
+import { generateKeyPair, exportJWK, SignJWT } from "jose";
 import { Miniflare, convertV4MiniflareOptions } from "miniflare";
 let mf, db, script, persist;
 const bindings = { APP_ENV: "local", LOCAL_DEV_IDENTITY: "enabled" };
-const start = (vars = bindings) =>
+const start = (vars = bindings, outboundService) =>
   new Miniflare(
     convertV4MiniflareOptions({
       modules: true,
+      outboundService,
       script,
       compatibilityDate: "2026-09-09",
       bindings: vars,
+      serviceBindings: { ASSETS: () => new Response("Public login shell") },
       d1Databases: { DB: "test-db" },
       resourcePersistencePath: persist,
     }),
@@ -313,9 +316,15 @@ test("authorization rejects production, missing flags, forged identities and non
         ).status,
         401,
       );
+      assert.deepEqual(
+        await (
+          await runtime.dispatchFetch("http://localhost/auth/local")
+        ).json(),
+        { enabled: false },
+      );
       assert.equal(
         (await runtime.dispatchFetch("http://localhost/")).status,
-        401,
+        200,
       );
     } finally {
       await runtime.dispose();
@@ -337,6 +346,11 @@ test("authorization rejects production, missing flags, forged identities and non
   );
   assert.equal(
     (await call("", "GET", undefined, {}, mf, "http://attacker.example"))
+      .status,
+    401,
+  );
+  assert.equal(
+    (await call("", "GET", undefined, { Authorization: "Bearer malformed" }))
       .status,
     401,
   );
@@ -377,4 +391,327 @@ test("mutations reject cross-origin requests, malformed fields and stale writes"
     400,
   );
   assert.equal((await call("/INC-9999")).status, 404);
+});
+
+// Ephemeral RSA keys and synthetic tenant/subjects only; no network Auth0 calls.
+test("Auth0 RS256 authentication and server-side operation grants in workerd/D1", async (t) => {
+  const issuer = "https://fixture.us.auth0.com/";
+  const origin = "https://deskpilot.example";
+  const keys = await generateKeyPair("RS256", { extractable: true });
+  const wrongKeys = await generateKeyPair("RS256");
+  const publicKey = {
+    ...(await exportJWK(keys.publicKey)),
+    kid: "fixture-key",
+    alg: "RS256",
+    use: "sig",
+  };
+  const vars = {
+    APP_ENV: "production",
+    LOCAL_DEV_IDENTITY: "disabled",
+    APP_ORIGIN: origin,
+    AUTH0_ISSUER: issuer,
+    AUTH0_AUDIENCE: "https://deskpilot-api",
+    AUTH0_PERMISSIONS: JSON.stringify({
+      "auth0|fixture-reader": ["read"],
+      "auth0|fixture-writer": ["read", "write"],
+    }),
+  };
+  const now = Math.floor(Date.now() / 1000);
+  const sign = (claims = {}, key = keys.privateKey, header = {}) =>
+    new SignJWT({
+      iss: issuer,
+      aud: vars.AUTH0_AUDIENCE,
+      sub: "auth0|fixture-reader",
+      iat: now,
+      exp: now + 300,
+      ...claims,
+    })
+      .setProtectedHeader({ alg: "RS256", kid: "fixture-key", ...header })
+      .sign(key);
+  let jwksCalls = 0;
+  const outbound = (request) => {
+    assert.equal(request.url, issuer + ".well-known/jwks.json");
+    jwksCalls++;
+    return Response.json({ keys: [publicKey] });
+  };
+  const runtime = start(vars, outbound);
+  const request = async (
+    token,
+    method = "GET",
+    body,
+    headers = {},
+    path = "",
+  ) =>
+    call(
+      path,
+      method,
+      body,
+      { ...(token ? { Authorization: "Bearer " + token } : {}), ...headers },
+      runtime,
+      origin,
+    );
+  try {
+    await t.test(
+      "valid reader can read but cannot write; writer can write with verified actor",
+      async () => {
+        const reader = await sign();
+        assert.equal((await request(reader)).status, 200);
+        assert.equal(
+          (
+            await request(
+              reader,
+              "POST",
+              { version: 1 },
+              {},
+              "/INC-1042/analyze",
+            )
+          ).status,
+          403,
+        );
+        const writer = await sign({ sub: "auth0|fixture-writer" });
+        const {
+          data: { ticket },
+        } = await request(writer, "GET", undefined, {}, "/INC-1042");
+        assert.equal(
+          (
+            await request(
+              writer,
+              "POST",
+              { version: ticket.version, actor: "forged" },
+              {},
+              "/INC-1042/analyze",
+            )
+          ).status,
+          200,
+        );
+        const record = await request(writer, "GET", undefined, {}, "/INC-1042");
+        assert.equal(record.data.audit[0].actor, "auth0|fixture-writer");
+        assert.equal(jwksCalls, 1, "trusted keys are cached per isolate");
+      },
+    );
+    await t.test(
+      "authentication and token scopes do not grant permissions",
+      async () => {
+        for (const sub of ["auth0|unlisted-fixture", "toString", "__proto__"])
+          assert.equal(
+            (
+              await request(
+                await sign({
+                  sub,
+                  permissions: ["read", "write"],
+                  scope: "read write",
+                }),
+              )
+            ).status,
+            403,
+          );
+      },
+    );
+    for (const [name, claims] of [
+      ["expired", { exp: now - 1 }],
+      ["wrong issuer", { iss: "https://other.auth0.com/" }],
+      ["wrong audience", { aud: "other-api" }],
+      ["future iat", { iat: now + 600 }],
+      ["missing iat", { iat: undefined }],
+      ["non-numeric iat", { iat: "yesterday" }],
+      ["negative iat", { iat: -1 }],
+      ["missing exp", { exp: undefined }],
+      ["missing sub", { sub: undefined }],
+      ["empty sub", { sub: " " }],
+      ["non-string sub", { sub: 123 }],
+      ["not yet valid", { nbf: now + 600 }],
+    ])
+      await t.test("rejects " + name, async () =>
+        assert.equal((await request(await sign(claims))).status, 401),
+      );
+    await t.test(
+      "rejects bad signature, missing/malformed token, wrong algorithm and unknown key",
+      async () => {
+        for (const token of [
+          undefined,
+          "bad.token.value",
+          await sign({}, wrongKeys.privateKey),
+          await sign({}, keys.privateKey, { kid: "unknown-key" }),
+          await new SignJWT({
+            sub: "auth0|fixture-writer",
+            iss: issuer,
+            aud: vars.AUTH0_AUDIENCE,
+            exp: now + 300,
+            iat: now,
+          })
+            .setProtectedHeader({ alg: "HS256" })
+            .sign(new Uint8Array(32)),
+        ])
+          assert.equal((await request(token)).status, 401);
+        assert.equal(
+          (
+            await request(undefined, "GET", undefined, {
+              Authorization: "Basic abc",
+            })
+          ).status,
+          401,
+        );
+      },
+    );
+    await t.test(
+      "rejects browser identity headers, foreign origin, non-JSON writes and alternate hostnames",
+      async () => {
+        const writer = await sign({ sub: "auth0|fixture-writer" });
+        for (const name of [
+          "cf-access-jwt-assertion",
+          "cf-access-authenticated-user-email",
+          "x-user-email",
+          "x-user-id",
+        ])
+          assert.equal(
+            (await request(writer, "GET", undefined, { [name]: "forged" }))
+              .status,
+            401,
+          );
+        assert.equal(
+          (
+            await request(
+              writer,
+              "POST",
+              { version: 1 },
+              { Origin: "https://attacker.invalid" },
+              "/INC-1042/analyze",
+            )
+          ).status,
+          403,
+        );
+        for (const value of ["text/plain", "application/json-bypass"])
+          assert.equal(
+            (
+              await request(
+                writer,
+                "POST",
+                { version: 1 },
+                { "Content-Type": value },
+                "/INC-1042/analyze",
+              )
+            ).status,
+            415,
+          );
+        assert.equal(
+          (
+            await call(
+              "",
+              "GET",
+              undefined,
+              { Authorization: "Bearer " + writer },
+              runtime,
+              "https://preview.example",
+            )
+          ).status,
+          401,
+        );
+        assert.deepEqual(
+          await (await runtime.dispatchFetch(origin + "/auth/local")).json(),
+          { enabled: false },
+        );
+      },
+    );
+  } finally {
+    await runtime.dispose();
+  }
+  for (const [name, override] of [
+    ["missing issuer", { AUTH0_ISSUER: undefined }],
+    ["missing audience", { AUTH0_AUDIENCE: undefined }],
+    ["missing origin", { APP_ORIGIN: undefined }],
+    ["missing grants", { AUTH0_PERMISSIONS: undefined }],
+    [
+      "invalid grants",
+      { AUTH0_PERMISSIONS: '{"auth0|fixture-reader":["admin"]}' },
+    ],
+    ["non-object grants", { AUTH0_PERMISSIONS: '"read"' }],
+    [
+      "write without read",
+      { AUTH0_PERMISSIONS: '{"auth0|fixture-reader":["write"]}' },
+    ],
+    ["production local bypass", { LOCAL_DEV_IDENTITY: "enabled" }],
+    ["missing bypass flag", { LOCAL_DEV_IDENTITY: undefined }],
+    ["non-tenant issuer", { AUTH0_ISSUER: "https://attacker.invalid/" }],
+  ])
+    await t.test("fails closed for " + name, async () => {
+      const config = Object.fromEntries(
+        Object.entries({ ...vars, ...override }).filter(
+          ([, value]) => value !== undefined,
+        ),
+      );
+      const instance = start(config, outbound);
+      try {
+        assert.equal(
+          (
+            await call(
+              "",
+              "GET",
+              undefined,
+              { Authorization: "Bearer " + (await sign()) },
+              instance,
+              origin,
+            )
+          ).status,
+          401,
+        );
+      } finally {
+        await instance.dispose();
+      }
+    });
+  for (const [name, handler] of [
+    ["unavailable JWKS", () => new Response("unavailable", { status: 503 })],
+    ["malformed JWKS", () => Response.json({ keys: "invalid" })],
+    ["empty JWKS", () => Response.json({ keys: [] })],
+  ])
+    await t.test("fails closed for " + name, async () => {
+      const instance = start(vars, handler);
+      try {
+        assert.equal(
+          (
+            await call(
+              "",
+              "GET",
+              undefined,
+              { Authorization: "Bearer " + (await sign()) },
+              instance,
+              origin,
+            )
+          ).status,
+          401,
+        );
+      } finally {
+        await instance.dispose();
+      }
+    });
+  await t.test(
+    "local Auth0 mode validates tokens with development identity disabled",
+    async () => {
+      const instance = start(
+        { ...vars, APP_ENV: "local", APP_ORIGIN: "http://127.0.0.1" },
+        outbound,
+      );
+      try {
+        assert.equal(
+          (await call("", "GET", undefined, {}, instance, "http://127.0.0.1"))
+            .status,
+          401,
+        );
+        assert.equal(
+          (
+            await call(
+              "",
+              "GET",
+              undefined,
+              { Authorization: "Bearer " + (await sign()) },
+              instance,
+              "http://127.0.0.1",
+            )
+          ).status,
+          200,
+        );
+      } finally {
+        await instance.dispose();
+      }
+    },
+  );
 });
