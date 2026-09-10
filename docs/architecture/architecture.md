@@ -1,5 +1,15 @@
 # Architecture and boundaries
 
+## Production web application
+
+Production: https://deskpilot.diegodgspro.workers.dev
+
+React and TypeScript assets plus a same-origin API run on a Cloudflare Worker. Remote D1 persists eight synthetic incidents, current analyses and append-only audit events. Auth0 Universal Login with PKCE supplies bearer access tokens; the Worker validates RS256/JWKS and exact claims, then checks independent server-owned read/write grants. Production disables local identity and requires the exact origin for mutations. Cloudflare Access is intentionally not used.
+
+Web analysis uses deterministic runbook matching and priority policy. Human approval produces a simulation only. Version checks invalidate stale decisions; resolution requires explicit restoration confirmation. No model confirms incident causes. Audit actor identities are private and must not be exported publicly. See [web contracts](../../web/README.md) and [operations](../cloudflare-deployment.md).
+
+## Independent Python/Streamlit lab
+
 ```mermaid
 flowchart TD
     A["Mock ITSM / future vendor adapter"] --> B["Normalized Ticket"]
@@ -15,7 +25,7 @@ flowchart TD
 
 ![Architecture](architecture.png)
 
-The app has no database and no shell executor. The mock connector and approval events are per Streamlit session. Export incident JSON before closing the session. The model is fitted once per process and cached; no serialized model download is needed.
+The Python lab has no database and no shell executor. The mock connector and approval events are per Streamlit session. Export incident JSON before closing the session. The model is fitted once per process and cached; no serialized model download is needed.
 
 ## Recommendation pipeline
 
@@ -32,4 +42,4 @@ The app has no database and no shell executor. The mock connector and approval e
 
 ## Deliberately excluded
 
-Multi-tenancy, enterprise authentication, production ticket writes, automated account changes, live PowerShell execution, vector databases, SLA timers, attachment processing and unattended resolution. These require a separate threat model and deployment design.
+Multi-tenancy, enterprise identity governance, real ITSM ticket writes, automated account changes, live PowerShell execution, vector databases, SLA timers, attachment processing and unattended resolution. These require a separate threat model and deployment design.

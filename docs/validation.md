@@ -37,3 +37,11 @@ Setup was checked against `requirements.txt` (Streamlit, scikit-learn and python
 ## Interpretation
 
 The 29 tests are functional regression checks, not a model-performance benchmark. The eight scenario fixtures are authored separately from the 40 training examples but share designed support domains. No independent accuracy, root-cause confidence, time reduction or SLA improvement has been measured. All screenshots or posts should retain this distinction.
+
+## DeskPilot v1.0.0 production checkpoint — 2026-09-10
+
+Production: https://deskpilot.diegodgspro.workers.dev
+
+The earlier Linux limitations above describe the initial Python build. Web browser verification now runs locally in Edge and in CI Chromium: six scenarios cover desktop/mobile workflow and mocked OAuth. Real interface captures are generated in ignored test output, not committed as screenshots. The web suite also has 39 Worker/D1 checks and 16 frontend tests; the Python suite remains 29 tests. TypeScript, production builds and npm audit are release gates. No line-coverage percentage is claimed.
+
+The user accepted production Auth0 login, authenticated reads, a write persisted after reload and logout. Remote D1 has both initial migrations applied and eight expected synthetic incidents. Audit identities remain private. The release rerun passed all 29 Python, 39 Worker/D1, 16 frontend and six Edge browser tests, type checking, clean build and guarded production build; npm audit returned zero vulnerabilities. Public landing/assets returned 200 and unauthenticated API probes returned 401. The final GitHub Release records CI, deployed commit and operational checkpoint. See [release scope](releases/v1.0.0.md).
