@@ -16,3 +16,5 @@ web/dist/
 web/.wrangler/
 web/.test-build/
 web/.dev.vars*
+!web/.dev.vars.example
+web/auth0.production.local.json
