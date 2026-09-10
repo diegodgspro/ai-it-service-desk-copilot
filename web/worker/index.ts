@@ -1,4 +1,4 @@
-﻿import { authorize, type AuthConfig } from "./auth";
+import { authorize, isLocalDevelopment, type AuthConfig } from "./auth";
 import { analyze } from "./analysis";
 import type { Ticket } from "../shared/types";
 interface Env extends AuthConfig {
@@ -22,25 +22,39 @@ const validText = (x: unknown, max = 5000): x is string =>
   typeof x === "string" && !!x.trim() && x.length <= max;
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
+    const url = new URL(request.url);
+    if (url.pathname === "/auth/local" && request.method === "GET")
+      return json({ enabled: isLocalDevelopment(request, env) });
+    // The public SPA shell contains no ticket data and must load before login.
+    if (url.pathname !== "/api" && !url.pathname.startsWith("/api/"))
+      return env.ASSETS.fetch(request);
     const identity = await authorize(request, env);
     if (!identity)
       return json(
-        { error: "Access unavailable. This environment is not authorized." },
+        {
+          error:
+            "Authentication required. Sign in again or contact the workspace administrator.",
+        },
         401,
       );
     const actor = identity.actor;
-    if (!identity.permissions.includes("read")) return json({ error: "Read permission required" }, 403);
-    const url = new URL(request.url);
-    if (!url.pathname.startsWith("/api/")) return env.ASSETS.fetch(request);
+    if (!identity.permissions.includes("read"))
+      return json({ error: "Read permission required" }, 403);
+
     try {
       if (!["GET", "POST", "PATCH"].includes(request.method))
         return json({ error: "Method not allowed" }, 405);
       if (request.method !== "GET") {
-        if (!identity.permissions.includes("write")) return json({ error: "Write permission required" }, 403);
+        if (!identity.permissions.includes("write"))
+          return json({ error: "Write permission required" }, 403);
         if (request.headers.get("origin") !== url.origin)
           return json({ error: "Same-origin request required" }, 403);
         if (
-          !request.headers.get("content-type")?.startsWith("application/json")
+          request.headers
+            .get("content-type")
+            ?.split(";")[0]
+            .trim()
+            .toLowerCase() !== "application/json"
         )
           return json({ error: "JSON required" }, 415);
       }
@@ -208,5 +222,3 @@ export default {
     }
   },
 };
-
-

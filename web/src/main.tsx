@@ -2,22 +2,9 @@ import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import type { Ticket, Detail, Level } from "../shared/types";
 import "./style.css";
-async function api<T>(
-  path: string,
-  method = "GET",
-  body?: unknown,
-): Promise<T> {
-  const response = await fetch("/api" + path, {
-    method,
-    headers: body ? { "Content-Type": "application/json" } : undefined,
-    body: body ? JSON.stringify(body) : undefined,
-  });
-  const data = await response.json();
-  if (!response.ok)
-    throw new Error((data as { error?: string }).error || "Request failed");
-  return data as T;
-}
+import { AuthRoot, useSession } from "./auth";
 function App() {
+  const { api, displayName, local, logout } = useSession();
   const [tickets, setTickets] = useState<Ticket[]>([]),
     [selected, setSelected] = useState("INC-1042"),
     [detail, setDetail] = useState<Detail | null>(null);
@@ -65,7 +52,7 @@ function App() {
     return () => {
       active = false;
     };
-  }, [selected]);
+  }, [selected, api]);
   const current = detail?.ticket.id === selected ? detail.ticket : undefined;
   const dirty =
     !!draft &&
@@ -129,7 +116,10 @@ function App() {
         <div className="avatar">
           <span>LT</span>
           <div>
-            Lab technician<small>Local workspace</small>
+            {displayName}
+            <small>
+              {local ? "Local test workspace" : "Authenticated workspace"}
+            </small>
           </div>
         </div>
       </aside>
@@ -140,9 +130,17 @@ function App() {
             <h1>A clearer path to resolution.</h1>
             <p>Investigate the evidence. Review the next step. Keep control.</p>
           </div>
-          <span className="lab-tag">
-            <i /> Synthetic data
-          </span>
+          <div className="session-summary">
+            <span>{displayName}</span>
+            <span className="lab-tag">
+              <i /> Synthetic data
+            </span>
+            {logout && (
+              <button className="logout-button" onClick={logout}>
+                Sign out
+              </button>
+            )}
+          </div>
         </header>
         <section className="stats" aria-label="Queue summary">
           <div>
@@ -625,6 +623,8 @@ function App() {
 }
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <App />
+    <AuthRoot>
+      <App />
+    </AuthRoot>
   </React.StrictMode>,
 );

@@ -1,0 +1,10 @@
+# Worker-only local settings. Copy to .dev.vars. Never prefix these with VITE_.
+APP_ENV=local
+LOCAL_DEV_IDENTITY=disabled
+APP_ORIGIN=http://127.0.0.1:8787
+AUTH0_ISSUER=https://YOUR_TENANT.us.auth0.com/
+AUTH0_AUDIENCE=https://deskpilot-api
+# Empty map denies all users. Replace locally with exact Auth0 user_id (JWT sub).
+# Example shape only: {"REPLACE_WITH_SUBJECT":["read"]}
+# Grant ["read","write"] only to an explicitly authorized technician.
+AUTH0_PERMISSIONS='{}'
