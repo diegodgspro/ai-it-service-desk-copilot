@@ -1,6 +1,6 @@
 # DeskPilot web workspace
 
-The React/TypeScript dashboard and Cloudflare Worker API run entirely on your computer. The existing Python/Streamlit lab is unchanged. Only synthetic records belong in either lab.
+The React/TypeScript dashboard and Cloudflare Worker API support local development and the controlled production deployment described in [the deployment runbook](../docs/cloudflare-deployment.md). The existing Python/Streamlit lab is unchanged. Only synthetic records belong in either lab.
 
 ## Windows setup
 
@@ -35,7 +35,7 @@ npm.cmd run build
 npm.cmd run test:browser
 ```
 
-Stop any running Wrangler server before browser verification; the suite owns port 8787 and refuses to reuse an existing server. The browser tests use installed Microsoft Edge on Windows. On Linux/macOS install Playwright Chromium with `npx playwright install chromium` first. CI installs Chromium and its OS dependencies. The browser suite starts its own server, supplies synthetic frontend Auth0 settings, intercepts OAuth endpoints without contacting a tenant, verifies login/callback/logout and API errors, changes the synthetic printer incident, restores its authored description and preserves the explicitly labeled verification audit events. It verifies desktop behavior and a 390-pixel mobile layout. Screenshots are genuine browser captures in ignored `.test-build/dashboard-desktop.png`, `.test-build/dashboard-mobile.png`, `.test-build/login-desktop.png` and `.test-build/login-mobile.png`. Browser OAuth tests exercise the real SDK with mocked OAuth/API responses; separate integration tests verify actual RSA signatures through mocked JWKS in workerd and permissions against local D1. Test credentials and mocks are confined to tests. Run `npm.cmd run build` afterward to replace the browser fixture build with your normal build settings.
+Stop any running Wrangler server before browser verification; the suite owns port 8787 and refuses to reuse an existing server. The browser tests use installed Microsoft Edge on Windows. On Linux/macOS install Playwright Chromium with `npx playwright install chromium` first. CI installs Chromium and its OS dependencies. The browser suite starts its own server with isolated `.test-build/browser-state` persistence, supplies synthetic frontend Auth0 settings, intercepts OAuth endpoints without contacting a tenant, verifies login/callback/logout and API errors, changes the synthetic printer incident, restores its authored description and preserves the explicitly labeled verification audit events. It verifies desktop behavior and a 390-pixel mobile layout. Screenshots are genuine browser captures in ignored `.test-build/dashboard-desktop.png`, `.test-build/dashboard-mobile.png`, `.test-build/login-desktop.png` and `.test-build/login-mobile.png`. Browser OAuth tests exercise the real SDK with mocked OAuth/API responses; separate integration tests verify actual RSA signatures through mocked JWKS in workerd and permissions against local D1. Test credentials and mocks are confined to tests. Run `npm.cmd run build` afterward to replace the browser fixture build with your normal build settings.
 
 From the repository root, preserve the Python check:
 
@@ -63,7 +63,7 @@ The current analysis persists on each ticket. Previous analysis identifiers rema
 
 ## Local persistence and reset
 
-Wrangler persists D1 under ignored `web/.wrangler/state/`. Restarting the server or reloading the browser preserves records. `npm run db:migrate` explicitly uses `--local`; no remote database exists. The all-zero database ID is a local placeholder.
+Wrangler persists D1 under ignored `web/.wrangler/state/`. Restarting the server or reloading the browser preserves records. `npm run db:migrate` explicitly uses `--local`; production uses the separate remote binding in `wrangler.json`. Never copy local state to production.
 
 To start a fresh lab, stop Wrangler and move `.wrangler/state` to a backup directory, then run `npm run dev`. This intentionally resets local records; keep your backup if you need the old audit. Integration tests use a separate temporary database and remove only their own temporary directory. Do not modify applied migration files to update a persisted database: add a new migration. The seed generator is for reproducible baseline fixtures, not for overwriting current records.
 
@@ -79,7 +79,7 @@ In the Auth0 SPA application settings, configure these exact URL lists:
 | Allowed Logout URLs | `http://127.0.0.1:8787, https://deskpilot.diegodgspro.workers.dev` |
 | Allowed Web Origins | `http://127.0.0.1:8787, https://deskpilot.diegodgspro.workers.dev` |
 
-The second origin is planned, not deployed. Enable an appropriate login connection for the SPA and create/use a test account through the Auth0 dashboard. Use the exact loopback URL, not `localhost`, for this documented configuration. The SDK uses Authorization Code with PKCE and Universal Login, requesting `openid profile email` and the API audience. It keeps tokens in memory; it does not persist tokens in localStorage. After a reload it attempts SDK session recovery. Browser cookie restrictions or a missing Auth0 session can require signing in again.
+The second origin is the production target; see the deployment runbook for release status and verification. Enable an appropriate login connection for the SPA and create/use a test account through the Auth0 dashboard. Use the exact loopback URL, not `localhost`, for this documented configuration. The SDK uses Authorization Code with PKCE and Universal Login, requesting `openid profile email` and the API audience. It keeps tokens in memory; it does not persist tokens in localStorage. After a reload it attempts SDK session recovery. Browser cookie restrictions or a missing Auth0 session can require signing in again.
 
 From the repository root, use the portable Node PATH block above if necessary, then:
 
@@ -150,9 +150,9 @@ The local test identity requires both explicit flags (`APP_ENV=local`, `LOCAL_DE
 
 Local Windows validation on 2026-09-10: 29 Python tests, 39 workerd/D1 checks, 16 frontend tests and six Edge browser scenarios passed. TypeScript checking and the production Vite/Worker dry-run build also passed. A fresh `npm.cmd ci` completed with zero reported vulnerabilities. The browser suite checks desktop and 390-pixel mobile layouts, OAuth errors, bearer propagation, logout and the original persisted incident workflow. Login and dashboard captures are visually inspected. GitHub Actions runs Python 3.11/3.12/3.13 plus Node 22 web tests, type checking, build and Chromium workflows on pushes and pull requests.
 
-Real tenant sign-in remains unverified until the ignored files are configured. No real tenant values, Client IDs, subjects, tokens or secrets are included in examples/tests. `auth0.production.example.json` documents the Worker production variable shape and the planned origin; it is not a deployment configuration. Keep a real copy, if needed later, in ignored `auth0.production.local.json` and store the actual map server-side. Build-time SPA values for production belong in that future build environment. Do not put the permission map in public frontend variables.
+The user successfully validated real local Auth0 login, authenticated reads and authenticated writes on 2026-09-10. The ignored issuer setting includes the required trailing slash. Production real login still requires manual acceptance. No real tenant values, Client IDs, subjects, tokens or secrets are included in examples/tests. `auth0.production.example.json` documents the Worker production variable shape and the planned origin; it is not a deployment configuration. Keep a real copy, if needed later, in ignored `auth0.production.local.json` and store the actual map server-side. Build-time SPA values are supplied by `node scripts/production.mjs build` from ignored `.env.local`; the helper validates issuer/audience consistency and never prints settings. Do not put the permission map in public frontend variables.
 
-Provisioning D1, replacing the all-zero database ID, remote migrations, selecting routes and deploying are separate future work requiring authorization. Keep Workers Free, D1 Free and Auth0 Free, no custom domain and no paid fallback. No resources were deployed by this integration. See [the roadmap](../docs/web-roadmap.md).
+Follow [the deployment runbook](../docs/cloudflare-deployment.md) for remote D1 migrations, secrets, review/merge, deployment, rollback and manual Auth0 acceptance. Keep Workers Free, D1 Free and Auth0 Free, no custom domain and no paid fallback. The Auth0 integration PR itself deployed no resources. See [the roadmap](../docs/web-roadmap.md).
 
 Implementation references: [Auth0 React SDK](https://auth0.com/docs/libraries/auth0-react), [Auth0 access-token validation](https://auth0.com/docs/secure/tokens/access-tokens/validate-access-tokens), [D1 local development](https://developers.cloudflare.com/d1/best-practices/local-development/) and [Worker-first assets](https://developers.cloudflare.com/workers/static-assets/binding/).
 
