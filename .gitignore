@@ -9,3 +9,10 @@ __pycache__/
 .DS_Store
 exports/
 *.log
+
+.tools/
+node_modules/
+web/dist/
+web/.wrangler/
+web/.test-build/
+web/.dev.vars*

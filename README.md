@@ -26,6 +26,10 @@ This copilot puts support reasoning first: identify scope, inspect evidence, fol
 - Optional Ollama narrative enrichment behind a provider interface.
 - PowerShell lab examples, regression tests, demonstration images and interview materials.
 
+## Local web version
+
+A separate React/TypeScript dashboard with a Cloudflare Worker API and local D1 persistence is available under [web/](web/README.md). It runs without credentials, uses deterministic runbook matching and keeps every action simulated. Production authentication and deployment are pending; the Python lab below is preserved.
+
 ## Run locally
 
 Python **3.11, 3.12 or 3.13** supported by the CI matrix. Windows validation passed on Python 3.13. Extract this repository and open a terminal inside `ai-it-service-desk-copilot`.
@@ -147,7 +151,7 @@ Repository: [diegodgspro/ai-it-service-desk-copilot](https://github.com/diegodgs
 
 ## Next improvements
 
-See the [proposed free-plan web roadmap](docs/web-roadmap.md). The Python/Streamlit lab remains intact; no web migration or Cloudflare deployment is implemented in this phase.
+See the [web roadmap and implementation progress](docs/web-roadmap.md). The first local web version is implemented; the Python/Streamlit lab remains intact. Cloudflare deployment and Workers AI integration are pending.
 
 Independent, de-identified evaluation data; better uncertain/multi-issue routing; one sandbox ITSM adapter; measured technician review outcomes; durable storage and access controls only when deployment requires them.
 
