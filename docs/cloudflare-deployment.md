@@ -1,5 +1,7 @@
 # DeskPilot production operations
 
+Production acceptance on 2026-09-10: the user confirmed Auth0 login, authenticated reads, an authenticated write persisted after reload and logout. Both initial remote D1 migrations are applied. See [v1.0.0](releases/v1.0.0.md).
+
 ## Architecture and cost boundary
 
 Production is https://deskpilot.diegodgspro.workers.dev: Worker `deskpilot`
@@ -29,8 +31,8 @@ References: [Workers limits](https://developers.cloudflare.com/workers/platform/
 
 ## Auth0 production settings
 
-In the existing Auth0 Single Page Application, add exactly
-`https://deskpilot.diegodgspro.workers.dev` to **Allowed Callback URLs**,
+When maintaining the existing Auth0 Single Page Application, verify exactly
+`https://deskpilot.diegodgspro.workers.dev` is present in **Allowed Callback URLs**,
 **Allowed Logout URLs**, and **Allowed Web Origins**. Keep
 `http://127.0.0.1:8787` in each list for local validation if still needed. Save
 the settings and confirm the intended test-account connection is enabled.
@@ -76,7 +78,7 @@ up-to-date main on a separate branch. Do not deploy feature branches to producti
 2. From the root run `.\.venv\Scripts\python.exe -m pytest -q`; on other
    platforms use the project Python interpreter.
 3. Run `npm ci`, `npm run typecheck`, `npm test`, `npm run build`, and
-   `npm run test:browser`. Check generated data with
+   `npm run test:browser`, and `npm audit`. Check generated data with
    `git diff --exit-code -- shared/data.json migrations/0002_synthetic_seed.sql`.
    Browser tests use isolated `.test-build/browser-state`; they do not modify the
    user's normal `.wrangler/state` database. The suite uses synthetic OAuth mocks.
@@ -110,7 +112,7 @@ npx wrangler d1 execute DB --remote --command "SELECT COUNT(*) AS ticket_count F
 
 Initial migrations are `0001_schema.sql` (tickets, append-only audit and index)
 and `0002_synthetic_seed.sql` (only eight authored incidents, INC-1041–INC-1048).
-Initial audit count is zero. Do not upload local databases, accounts, tokens,
+The seed creates zero audit events; pre-release production inspection found four events from accepted operations. Do not upload local databases, accounts, tokens,
 real personal/corporate records, or exports. Remote queries above return counts
 only; after login, audit actors are private identifiers and must not be printed.
 
@@ -129,9 +131,7 @@ restore a known compatible Worker version, use
 `npx wrangler rollback <previous-version-id>`. Rollback does not undo D1 changes;
 do not roll back code to an incompatible schema. Prefer a forward corrective
 migration. D1 Free Time Travel is limited to seven days; a database restore may
-discard newer writes and requires deliberate authorization. There is no earlier
-application version on the first deployment: fix forward or temporarily disable
-the Worker in the dashboard if the initial release is unsafe.
+discard newer writes and requires deliberate authorization. Record the previous compatible Worker version before every deployment. Fix forward if no compatible rollback target exists.
 
 Update `AUTH0_PERMISSIONS` through Wrangler secret input or a private stdin pipe;
 never put the value in a command argument, shell history or chat. `wrangler secret
@@ -155,7 +155,7 @@ requests must return 401, including mutation requests. Verify the deployed DB
 binding through authenticated Cloudflare management metadata, never a public
 diagnostic endpoint. No endpoint should expose deployment secrets.
 
-The user completes real Auth0 verification manually:
+The following manual checklist is retained for future releases; the user completed production login, reads, a persisted write and logout for v1.0.0:
 
 1. Save the three production URL lists above. Open a private browser at the exact
    production URL, confirm the login screen and absence of the local test button.
@@ -171,3 +171,9 @@ The user completes real Auth0 verification manually:
    a read-only account must load data but receive 403 on mutations.
 5. Record pass/fail without identities, permission maps or tokens. If any check
    fails, preserve authentication and investigate configuration or roll back.
+
+## Release recovery checkpoint
+
+Before deploying merged main, record a UTC timestamp and retrieve `npx wrangler d1 time-travel info DB --json`. Store the bookmark privately outside Git; publish only retrieval status and timestamp. This read-only operation does not restore data or enable a paid feature. Record the new deployment/version IDs and traffic allocation in the GitHub Release after verification.
+
+`web/wrangler.json` is strict JSON and has no comments. Its production flags deliberately disable local identity and preview URLs; its DB binding targets the existing remote D1 database. Local commands explicitly use local D1. Do not add a paid service binding or change the production origin.

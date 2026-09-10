@@ -1,6 +1,6 @@
 # Capture actual dashboard screenshots
 
-**Actual application screenshots could not be captured in the build environment.** The cloud browser could not open the local application and a local Chromium download failed. The Streamlit interaction tests passed, but they do not verify visual layout.
+**Historical Python build limitation:** actual Streamlit screenshots could not be captured in the original build environment. Web browser tests now generate genuine login/dashboard desktop and mobile captures in ignored `web/.test-build/`; none are committed for v1.0.0. The cloud browser could not open the local application and a local Chromium download failed. The Streamlit interaction tests passed, but they do not verify visual layout.
 
 Six ready-to-use **demonstration images** are in `../demo-images/`. Those are authored visual summaries generated from real local engine output, with explicit preview labels; they are **not screenshots of the Streamlit UI or a published GitHub repository**. The architecture image is an authored technical diagram.
 
