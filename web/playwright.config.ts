@@ -10,7 +10,8 @@ export default defineConfig({
     ...(process.platform === "win32" ? { channel: "msedge" } : {}),
   },
   webServer: {
-    command: "npm run dev",
+    command:
+      "npm run build && wrangler d1 migrations apply DB --local --persist-to .test-build/browser-state && wrangler dev --local --ip 127.0.0.1 --port 8787 --persist-to .test-build/browser-state --var APP_ENV:local --var LOCAL_DEV_IDENTITY:enabled",
     env: {
       VITE_AUTH0_DOMAIN: "fixture.us.auth0.com",
       VITE_AUTH0_CLIENT_ID: "synthetic-browser-client",
