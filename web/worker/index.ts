@@ -1,4 +1,4 @@
-import { authorize, type AuthConfig } from "./auth";
+﻿import { authorize, type AuthConfig } from "./auth";
 import { analyze } from "./analysis";
 import type { Ticket } from "../shared/types";
 interface Env extends AuthConfig {
@@ -22,18 +22,21 @@ const validText = (x: unknown, max = 5000): x is string =>
   typeof x === "string" && !!x.trim() && x.length <= max;
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
-    const actor = authorize(request, env);
-    if (!actor)
+    const identity = await authorize(request, env);
+    if (!identity)
       return json(
         { error: "Access unavailable. This environment is not authorized." },
         401,
       );
+    const actor = identity.actor;
+    if (!identity.permissions.includes("read")) return json({ error: "Read permission required" }, 403);
     const url = new URL(request.url);
     if (!url.pathname.startsWith("/api/")) return env.ASSETS.fetch(request);
     try {
       if (!["GET", "POST", "PATCH"].includes(request.method))
         return json({ error: "Method not allowed" }, 405);
       if (request.method !== "GET") {
+        if (!identity.permissions.includes("write")) return json({ error: "Write permission required" }, 403);
         if (request.headers.get("origin") !== url.origin)
           return json({ error: "Same-origin request required" }, 403);
         if (
@@ -179,7 +182,7 @@ export default {
           "UPDATE tickets SET status=?,version=version+1 WHERE id=? AND version=?",
         ).bind(body.status, id, row.version);
         kind = "handover";
-        detail = `${body.status}${body.status === "Resolved" ? " — service restoration confirmed" : ""}: ${String(body.note).trim()}`;
+        detail = `${body.status}${body.status === "Resolved" ? " â€” service restoration confirmed" : ""}: ${String(body.note).trim()}`;
       } else return json({ error: "Method not allowed" }, 405);
       // D1 batch is transactional. changes() gates the audit insert on the optimistic update.
       const results = await env.DB.batch([
@@ -205,3 +208,5 @@ export default {
     }
   },
 };
+
+

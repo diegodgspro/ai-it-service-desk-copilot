@@ -16,6 +16,7 @@
     "test:browser": "playwright test"
   },
   "dependencies": {
+    "jose": "^6.2.12",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"
   },
