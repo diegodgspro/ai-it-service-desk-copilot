@@ -1,4 +1,36 @@
 import { test, expect } from "@playwright/test";
+test("create a reviewed incident through deterministic intake on mobile", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  await page
+    .getByRole("button", { name: "Enter local test workspace" })
+    .click();
+  await page.getByRole("button", { name: /New incident/ }).click();
+  await expect(
+    page.getByRole("heading", { name: "New incident" }),
+  ).toBeVisible();
+  const description =
+    "Since 09:00 three users cannot connect to VPN. Error 812 appears, internet works and restart was tried.";
+  await page.getByLabel("Problem description").fill(description);
+  await page.getByRole("button", { name: "Prepare structured draft" }).click();
+  await expect(
+    page.getByText("Deterministic suggestion", { exact: true }),
+  ).toBeVisible();
+  await expect(page.getByLabel("Calculated priority")).toHaveValue("P4");
+  await expect(page.getByText("Unconfirmed:")).toBeVisible();
+  const create = page.getByRole("button", {
+    name: "Create confirmed incident",
+  });
+  await expect(create).toBeDisabled();
+  await page.getByRole("checkbox").check();
+  await create.click();
+  await expect(page.getByText(/created after confirmation/)).toBeVisible();
+  await expect(page.locator(".case-heading h2")).toContainText(
+    "Since 09:00 three users",
+  );
+});
 test("review, simulate, invalidate and resolve an incident on desktop and mobile", async ({
   page,
 }) => {
