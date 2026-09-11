@@ -4,6 +4,7 @@ import type { Ticket, Detail, Level } from "../shared/types";
 import "./style.css";
 import { AuthRoot, useSession } from "./auth";
 import { Intake } from "./Intake";
+import { KnowledgeEvidence } from "./KnowledgeEvidence";
 function App() {
   const { api, displayName, local, logout } = useSession();
   const [tickets, setTickets] = useState<Ticket[]>([]),
@@ -451,19 +452,17 @@ function App() {
                         )}
                         {tab === "Knowledge" && (
                           <>
-                            <span className="eyebrow">VERSIONED RUNBOOKS</span>
-                            <h3>Evidence you can inspect.</h3>
-                            <p className="muted">
-                              The authored article used to prepare this
-                              investigation. Validate each step in your lab.
-                            </p>
-                            {analysis.evidence.map((a) => (
-                              <article className="evidence" key={a.path}>
-                                <h3>{a.title}</h3>
-                                <small>{a.path}</small>
-                                <pre>{a.content}</pre>
-                              </article>
-                            ))}
+                            <span className="eyebrow">
+                              APPROVED LEXICAL RETRIEVAL
+                            </span>
+                            <KnowledgeEvidence
+                              api={api}
+                              query={`${current.title} ${current.description} ${analysis.category}`}
+                              filters={{
+                                language: "en",
+                                approvalStatus: "approved",
+                              }}
+                            />
                           </>
                         )}
                         {tab === "Automation" && (
