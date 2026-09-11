@@ -1,3 +1,19 @@
+---
+id: kb-network-vpn-troubleshooting
+title: Network: VPN
+source_type: runbook
+service: Network
+category: VPN
+product: Corporate VPN
+operating_system: any
+language: en
+approval_status: approved
+version: 1.0
+last_reviewed: 2026-09-11
+tags: vpn, remote access, authentication
+classification: synthetic-demo
+---
+
 # Network: VPN
 
 Portfolio knowledge article. Synthetic lab context; technician validation required.

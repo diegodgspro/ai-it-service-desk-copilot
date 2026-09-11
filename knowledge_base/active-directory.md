@@ -1,3 +1,19 @@
+---
+id: kb-active-directory-account-lockout
+title: Identity: Account lockout
+source_type: runbook
+service: Identity and access
+category: Active Directory
+product: Active Directory
+operating_system: Windows
+language: en
+approval_status: approved
+version: 1.0
+last_reviewed: 2026-09-11
+tags: account lockout, authentication, password change
+classification: synthetic-demo
+---
+
 # Identity: Account lockout
 
 Portfolio knowledge article. Synthetic lab context; technician validation required.

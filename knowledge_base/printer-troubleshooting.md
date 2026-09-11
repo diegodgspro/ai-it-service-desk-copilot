@@ -1,3 +1,19 @@
+---
+id: kb-hardware-printing
+title: Hardware: Printing
+source_type: runbook
+service: Printing
+category: Printer
+product: Network printer
+operating_system: any
+language: en
+approval_status: approved
+version: 1.0
+last_reviewed: 2026-09-11
+tags: printer, print queue, spooler
+classification: synthetic-demo
+---
+
 # Hardware: Printing
 
 Portfolio knowledge article. Synthetic lab context; technician validation required.

@@ -1,3 +1,19 @@
+---
+id: kb-microsoft365-outlook-authentication
+title: Identity: Microsoft 365
+source_type: runbook
+service: Microsoft 365
+category: Email
+product: Microsoft 365
+operating_system: any
+language: en
+approval_status: approved
+version: 1.0
+last_reviewed: 2026-09-11
+tags: outlook, email, sign in
+classification: synthetic-demo
+---
+
 # Identity: Microsoft 365
 
 Portfolio knowledge article. Synthetic lab context; technician validation required.

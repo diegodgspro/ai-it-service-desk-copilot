@@ -1,3 +1,19 @@
+---
+id: kb-network-dns-troubleshooting
+title: Network: DNS
+source_type: runbook
+service: Network
+category: DNS
+product: Corporate network
+operating_system: any
+language: en
+approval_status: approved
+version: 1.0
+last_reviewed: 2026-09-11
+tags: dns, hostname, name resolution
+classification: synthetic-demo
+---
+
 # Network: DNS
 
 Portfolio knowledge article. Synthetic lab context; technician validation required.
