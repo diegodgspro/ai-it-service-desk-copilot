@@ -1,11 +1,16 @@
 import { authorize, isLocalDevelopment, type AuthConfig } from "./auth";
 import { analyze } from "./analysis";
+import { generateIntake } from "./intake";
+import { validateIntakeDraft, type IntakeDraft } from "../shared/intake";
 import type { Ticket } from "../shared/types";
 interface Env extends AuthConfig {
   DB: D1Database;
   ASSETS: Fetcher;
 }
-type Row = Omit<Ticket, "analysis"> & { analysis: string | null };
+type Row = Omit<Ticket, "analysis" | "structuredIntake"> & {
+  analysis: string | null;
+  structured_intake?: string | null;
+};
 const json = (value: unknown, status = 200) =>
   Response.json(value, {
     status,
@@ -14,12 +19,28 @@ const json = (value: unknown, status = 200) =>
       "X-Content-Type-Options": "nosniff",
     },
   });
-const ticket = (row: Row): Ticket => ({
-  ...row,
-  analysis: row.analysis ? JSON.parse(row.analysis) : null,
-});
+const ticket = (row: Row): Ticket => {
+  const { structured_intake, ...fields } = row;
+  return {
+    ...fields,
+    analysis: row.analysis ? JSON.parse(row.analysis) : null,
+    structuredIntake: structured_intake ? JSON.parse(structured_intake) : null,
+  };
+};
 const validText = (x: unknown, max = 5000): x is string =>
   typeof x === "string" && !!x.trim() && x.length <= max;
+const parseBody = async (request: Request) => {
+  const raw = await request.text();
+  if (raw.length > 16000)
+    return { error: json({ error: "Request too large" }, 413) };
+  try {
+    const body: unknown = JSON.parse(raw);
+    if (!body || Array.isArray(body) || typeof body !== "object") throw Error();
+    return { body: body as Record<string, unknown> };
+  } catch {
+    return { error: json({ error: "Invalid JSON" }, 400) };
+  }
+};
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
@@ -64,6 +85,90 @@ export default {
         ).all<Row>();
         return json(rows.results.map(ticket));
       }
+      if (url.pathname === "/api/intake/draft" && request.method === "POST") {
+        const parsed = await parseBody(request);
+        if (parsed.error) return parsed.error;
+        if (
+          !validText(parsed.body?.description, 5000) ||
+          !validText(parsed.body?.requesterName, 120)
+        )
+          return json(
+            { error: "A problem description and requester name are required." },
+            400,
+          );
+        return json(
+          generateIntake(parsed.body.description, parsed.body.requesterName),
+        );
+      }
+      if (
+        url.pathname === "/api/intake/validate" &&
+        request.method === "POST"
+      ) {
+        const parsed = await parseBody(request);
+        if (parsed.error) return parsed.error;
+        if (!validateIntakeDraft(parsed.body?.draft))
+          return json(
+            { error: "The reviewed intake draft is malformed or unsupported." },
+            400,
+          );
+        const draft = generateIntake(
+          parsed.body.draft.description,
+          parsed.body.draft.requesterName,
+          { generate: () => parsed.body!.draft },
+        );
+        return json({ draft, valid: true });
+      }
+      if (
+        url.pathname === "/api/intake/incidents" &&
+        request.method === "POST"
+      ) {
+        const parsed = await parseBody(request);
+        if (parsed.error) return parsed.error;
+        if (
+          parsed.body?.confirmed !== true ||
+          !validateIntakeDraft(parsed.body?.draft)
+        )
+          return json(
+            {
+              error:
+                "A valid reviewed draft and explicit confirmation are required.",
+            },
+            400,
+          );
+        const draft = generateIntake(
+          parsed.body.draft.description,
+          parsed.body.draft.requesterName,
+          { generate: () => parsed.body!.draft },
+        ) as IntakeDraft;
+        for (let attempt = 0; attempt < 5; attempt++) {
+          const id = `INC-${Date.now()}${crypto.getRandomValues(new Uint32Array(1))[0].toString().padStart(10, "0")}`;
+          const results = await env.DB.batch([
+            env.DB.prepare(
+              "INSERT OR IGNORE INTO tickets(id,title,description,requester,impact,urgency,status,version,origin,structured_intake) VALUES(?,?,?,?,?,?,'Open',1,'structured-intake',?)",
+            ).bind(
+              id,
+              draft.summary,
+              draft.description,
+              draft.requesterName,
+              draft.impact,
+              draft.urgency,
+              JSON.stringify(draft),
+            ),
+            env.DB.prepare(
+              "INSERT INTO audit(ticket_id,kind,actor,detail) SELECT ?,'created',?,'Incident created after explicit confirmation through deterministic structured intake.' WHERE changes()=1",
+            ).bind(id, actor),
+          ]);
+          if (results[0].meta.changes === 1)
+            return json({ id, version: 1 }, 201);
+        }
+        return json(
+          {
+            error:
+              "Could not allocate a unique incident identifier. Retry safely.",
+          },
+          409,
+        );
+      }
       const match = url.pathname.match(
         /^\/api\/tickets\/(INC-\d+)(?:\/(analyze|decision|handover))?$/,
       );
@@ -81,16 +186,9 @@ export default {
           .all();
         return json({ ticket: ticket(row), audit: audit.results });
       }
-      const raw = await request.text();
-      if (raw.length > 16000) return json({ error: "Request too large" }, 413);
-      let body: Record<string, unknown>;
-      try {
-        body = JSON.parse(raw);
-        if (!body || Array.isArray(body) || typeof body !== "object")
-          throw Error();
-      } catch {
-        return json({ error: "Invalid JSON" }, 400);
-      }
+      const parsed = await parseBody(request);
+      if (parsed.error) return parsed.error;
+      const body = parsed.body!;
       if (!Number.isInteger(body.version) || body.version !== row.version)
         return json(
           { error: "This ticket changed. Reload before continuing." },

@@ -11,6 +11,8 @@ export type Ticket = {
   analysis: Analysis | null;
   analysis_id: string | null;
   decision: string | null;
+  origin?: "existing" | "structured-intake";
+  structuredIntake?: import("./intake").IntakeDraft | null;
 };
 export type Analysis = {
   mode: string;
