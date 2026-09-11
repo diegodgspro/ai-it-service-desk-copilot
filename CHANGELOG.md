@@ -2,6 +2,19 @@
 
 All notable changes follow [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The web package uses semantic versioning.
 
+## [Unreleased]
+
+### Added
+
+- Authenticated intelligent ticket intake with an editable canonical draft, relevant missing-information questions, explicit confirmation, and client-side draft state.
+- A provider-independent intake contract and deterministic local provider for common synthetic support signals.
+- Confirmed creation with collision-resistant identifiers, structured-intake origin metadata, and append-only audit events.
+
+### Security
+
+- Intake writes retain Auth0, server-owned grants, exact-origin checks, JSON and size enforcement, strict schema validation, and safe errors.
+- Suggestions are deterministic and suspected causes are unconfirmed hypotheses. Priority always comes from the impact × urgency policy.
+
 ## [1.0.0] - 2026-09-10
 
 ### Added

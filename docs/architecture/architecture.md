@@ -8,6 +8,8 @@ React and TypeScript assets plus a same-origin API run on a Cloudflare Worker. R
 
 Web analysis uses deterministic runbook matching and priority policy. Human approval produces a simulation only. Version checks invalidate stale decisions; resolution requires explicit restoration confirmation. No model confirms incident causes. Audit actor identities are private and must not be exported publicly. See [web contracts](../../web/README.md) and [operations](../cloudflare-deployment.md).
 
+Intelligent intake is a pre-creation boundary. React holds drafts locally; the Worker applies authentication, write authorization, same-origin and JSON guards before invoking a provider-independent contract. The v1.1.0 provider uses deterministic support-signal rules. Every result is schema-validated, and the Worker recalculates priority from the existing matrix. Only explicit confirmation inserts the incident and its append-only audit event. Migration `0003_structured_intake.sql` adds optional structured metadata and gives v1.0.0 rows the `existing` origin default.
+
 ## Independent Python/Streamlit lab
 
 ```mermaid

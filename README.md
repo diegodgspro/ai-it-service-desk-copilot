@@ -1,5 +1,9 @@
 # DeskPilot
 
+## v1.1.0 in development: Intelligent Ticket Intake
+
+Authenticated users can describe a synthetic IT problem, review a deterministic structured draft, answer relevant missing-information questions, edit it, and explicitly confirm incident creation. Drafts stay in the browser; only confirmed incidents are persisted and audited. Suggestions use transparent signal matching, not an external LLM or an AI diagnosis. Priority remains governed by the existing impact × urgency matrix, and automation remains simulated and human-controlled.
+
 **An IT service desk portfolio by Diego Gabriel dos Santos.** Turn a synthetic incident into an evidence-led troubleshooting plan, with human review before every simulated action.
 
 **Live demo:** https://deskpilot.diegodgspro.workers.dev

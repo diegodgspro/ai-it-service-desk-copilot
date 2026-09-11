@@ -111,6 +111,135 @@ test("all nine priorities match the Python source matrix", async () => {
       );
     }
 });
+test("structured intake drafts, validation, confirmation and audit are deterministic", async () => {
+  const request = async (path, body, headers = {}) => {
+    const response = await mf.dispatchFetch(
+      "http://localhost/api/intake" + path,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Origin: "http://localhost",
+          ...headers,
+        },
+        body: JSON.stringify(body),
+      },
+    );
+    return { status: response.status, data: await response.json() };
+  };
+  const input = {
+    description:
+      "Since 09:00 three users cannot connect to VPN. Error 812 appears, internet works and restart was tried.",
+    requesterName: "Synthetic Requester",
+  };
+  const generated = await request("/draft", input);
+  assert.equal(generated.status, 200);
+  assert.equal(generated.data.category, "Network");
+  assert.equal(generated.data.impact, "Medium");
+  assert.equal(generated.data.calculatedPriority, "P4");
+  assert.equal(generated.data.suspectedCauses[0].confirmed, false);
+  const malformed = await request("/validate", {
+    draft: { ...generated.data, calculatedPriority: "P0" },
+  });
+  assert.equal(malformed.status, 400);
+  const unconfirmed = await request("/incidents", {
+    draft: generated.data,
+    confirmed: false,
+  });
+  assert.equal(unconfirmed.status, 400);
+  generated.data.calculatedPriority = "P1";
+  const created = await request("/incidents", {
+    draft: generated.data,
+    confirmed: true,
+  });
+  assert.equal(created.status, 201);
+  const second = await request("/incidents", {
+    draft: generated.data,
+    confirmed: true,
+  });
+  assert.equal(second.status, 201);
+  assert.notEqual(second.data.id, created.data.id);
+  const record = await get(created.data.id);
+  assert.equal(record.ticket.origin, "structured-intake");
+  assert.equal(record.ticket.analysis, null);
+  assert.equal(record.ticket.structuredIntake.calculatedPriority, "P4");
+  assert.equal(record.audit[0].kind, "created");
+  assert.equal(record.audit[0].actor, "local-lab-technician");
+});
+test("intake recognizes supported signals and asks only relevant missing questions", async () => {
+  const cases = [
+    ["My Active Directory account is locked", "Identity and access"],
+    ["VPN will not connect", "Network"],
+    ["Outlook email is unavailable", "Microsoft 365"],
+    ["The printer queue is stuck", "Printing"],
+    ["Laptop disk is full and slow", "Workstation"],
+    ["ERP screen crashes", "Business application"],
+    ["Access denied permission to folder", "Identity and access"],
+    ["The software application crashes", "Software"],
+  ];
+  for (const [description, category] of cases) {
+    const response = await mf.dispatchFetch(
+      "http://localhost/api/intake/draft",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Origin: "http://localhost",
+        },
+        body: JSON.stringify({
+          description,
+          requesterName: "Synthetic Requester",
+        }),
+      },
+    );
+    const draft = await response.json();
+    assert.equal(response.status, 200);
+    assert.equal(draft.category, category);
+    assert.equal(
+      new Set(draft.followUpQuestions).size,
+      draft.followUpQuestions.length,
+    );
+    if (category !== "Network")
+      assert.equal(
+        draft.followUpQuestions.includes("Does general internet access work?"),
+        false,
+      );
+  }
+});
+test("intake writes enforce authentication, permissions, origin, JSON and size", async () => {
+  const response = await mf.dispatchFetch("http://localhost/api/intake/draft", {
+    method: "POST",
+    headers: { "Content-Type": "text/plain", Origin: "http://localhost" },
+    body: "{}",
+  });
+  assert.equal(response.status, 415);
+  const unauth = start({
+    APP_ENV: "production",
+    LOCAL_DEV_IDENTITY: "disabled",
+  });
+  const denied = await unauth.dispatchFetch(
+    "https://deskpilot.example/api/intake/draft",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Origin: "https://deskpilot.example",
+      },
+      body: "{}",
+    },
+  );
+  assert.equal(denied.status, 401);
+  await unauth.dispose();
+  const huge = await mf.dispatchFetch("http://localhost/api/intake/draft", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Origin: "http://localhost" },
+    body: JSON.stringify({
+      description: "x".repeat(17000),
+      requesterName: "Test",
+    }),
+  });
+  assert.equal(huge.status, 413);
+});
 test("all eight synthetic incidents produce their authored runbooks without scores", async () => {
   const tickets = JSON.parse(
     await readFile("../sample_data/tickets.json", "utf8"),
