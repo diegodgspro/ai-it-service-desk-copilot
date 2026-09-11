@@ -1,6 +1,6 @@
 # DeskPilot
 
-## v1.1.0 in development: Intelligent Ticket Intake
+## v1.1.0 — Intelligent Ticket Intake
 
 Authenticated users can describe a synthetic IT problem, review a deterministic structured draft, answer relevant missing-information questions, edit it, and explicitly confirm incident creation. Drafts stay in the browser; only confirmed incidents are persisted and audited. Suggestions use transparent signal matching, not an external LLM or an AI diagnosis. Priority remains governed by the existing impact × urgency matrix, and automation remains simulated and human-controlled.
 
@@ -10,15 +10,17 @@ Authenticated users can describe a synthetic IT problem, review a deterministic 
 
 > **Synthetic data only · Simulated automation.** The login page is public; the workspace requires an authorized Auth0 account. This is a personal portfolio, not an enterprise ITSM service.
 
-## Production status — v1.0.0
+## Production status — v1.1.0
 
-Cloudflare Worker, remote D1 and Auth0 operate together. Production acceptance on September 10, 2026 confirmed login, authenticated reads, an authenticated write that survived reload, and logout. Eight synthetic incidents are persisted in D1. Cloudflare Access is intentionally not used. Workers Free, D1 Free and Auth0 Free are the cost boundary; no paid fallback is authorized.
+Cloudflare Worker, remote D1 and Auth0 operate together. Production acceptance on September 11, 2026 confirmed login, structured draft generation, relevant follow-up questions, policy-controlled priority, explicit confirmation, incident creation and persistence across refresh and logout/login. The eight existing synthetic incidents remained compatible after migration `0003_structured_intake.sql`. Cloudflare Access is intentionally not used. Workers Free, D1 Free and Auth0 Free are the cost boundary; no paid fallback is authorized.
 
-See the [release checkpoint](docs/releases/v1.0.0.md), [changelog](CHANGELOG.md) and [deployment and recovery runbook](docs/cloudflare-deployment.md).
+See the [v1.1.0 release](https://github.com/diegodgspro/ai-it-service-desk-copilot/releases/tag/v1.1.0), [changelog](CHANGELOG.md) and [deployment and recovery runbook](docs/cloudflare-deployment.md).
 
 ## Features
 
-- Responsive React dashboard for eight identity, Windows, networking and application support scenarios.
+- Authenticated intelligent ticket intake with editable structured drafts and relevant follow-up questions.
+- Explicit confirmation before an incident is created, persisted and recorded in the audit trail.
+- Responsive React dashboard for identity, Windows, networking and application support scenarios.
 - Deterministic incident analysis: priority matrix, runbook matching, working hypotheses and manual/security escalation.
 - Evidence from nine knowledge articles, investigation steps and response drafts.
 - Human-approved or rejected **simulations**; the dashboard runs no PowerShell or external IT operation.
@@ -35,7 +37,7 @@ Auth0 Universal Login uses Authorization Code with PKCE and in-memory tokens. Th
 
 The SPA shell is public; API records are protected. The loopback development identity is disabled in production. `web/.env.local` and `web/.dev.vars` remain ignored. Although incidents are synthetic, authenticated audit actor identifiers are private and must not be published in exports or screenshots.
 
-Web analysis is deterministic, with no LLM calls or confidence score. The Python lab uses TF-IDF/logistic regression on 40 authored examples and optional Ollama for narrative fields only. Neither system confirms incident causes; outputs are working hypotheses requiring investigation. [Architecture](docs/architecture/architecture.md) · [Web contracts](web/README.md).
+Web analysis and ticket intake are deterministic, with no LLM calls or confidence score. The Python lab uses TF-IDF/logistic regression on 40 authored examples and optional Ollama for narrative fields only. Neither system confirms incident causes; outputs are working hypotheses requiring investigation. [Architecture](docs/architecture/architecture.md) · [Web contracts](web/README.md).
 
 ## Local web setup
 
@@ -81,7 +83,7 @@ node scripts/production.mjs build
 
 The final command requires ignored production settings and replaces the browser fixture build. Browser tests own port 8787 and use isolated test D1. Windows uses Edge; on Linux install Chromium with `npx playwright install --with-deps chromium`.
 
-Verified functional coverage: **29 Python tests, 39 Worker/D1 checks, 16 frontend tests and six browser scenarios**, plus TypeScript and production builds. Checks cover all nine priority combinations, authentication failures, authorization, persistence, concurrency, stale approvals, simulated decisions, restoration gates, OAuth behavior and desktop/mobile workflows. Counts are not line-coverage percentages or model accuracy measurements. GitHub Actions runs Python 3.11/3.12/3.13 and the Node 22 web suite. [Validation record](docs/validation.md).
+Verified functional coverage for v1.1.0: **29 Python tests, 42 Worker/D1 checks, 18 frontend tests and seven browser scenarios**, plus TypeScript and production builds. Checks cover structured intake, all nine priority combinations, authentication failures, authorization, persistence, concurrency, stale approvals, simulated decisions, restoration gates, OAuth behavior and desktop/mobile workflows. Counts are not line-coverage percentages or model accuracy measurements. GitHub Actions runs Python 3.11/3.12/3.13 and the Node 22 web suite. [Validation record](docs/validation.md).
 
 ## Screenshots
 

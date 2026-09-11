@@ -4,6 +4,8 @@ All notable changes follow [Keep a Changelog](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-09-11
+
 ### Added
 
 - Authenticated intelligent ticket intake with an editable canonical draft, relevant missing-information questions, explicit confirmation, and client-side draft state.
@@ -43,4 +45,6 @@ All notable changes follow [Keep a Changelog](https://keepachangelog.com/en/1.1.
 - Working hypotheses, not confirmed causes; no production LLM enabled.
 - Bounded queue/audit display, no historical analysis archive, multi-tenancy or enterprise SLA. Free quotas apply with no paid fallback.
 
+[Unreleased]: https://github.com/diegodgspro/ai-it-service-desk-copilot/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/diegodgspro/ai-it-service-desk-copilot/releases/tag/v1.1.0
 [1.0.0]: https://github.com/diegodgspro/ai-it-service-desk-copilot/releases/tag/v1.0.0
