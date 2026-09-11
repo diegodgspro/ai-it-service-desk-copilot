@@ -1,0 +1,14 @@
+[
+  {"id":"ad-lockout","query":"Active Directory domain account locked after password change","expected":"kb-active-directory-account-lockout"},
+  {"id":"vpn","query":"VPN tunnel authentication rejected remote worker","expected":"kb-network-vpn-troubleshooting"},
+  {"id":"dns","query":"internal hostname DNS resolution fails","expected":"kb-network-dns-troubleshooting"},
+  {"id":"m365","query":"Outlook Microsoft 365 repeatedly requests sign in","expected":"kb-microsoft365-outlook-authentication"},
+  {"id":"printer","query":"printer offline documents stuck in print queue","expected":"kb-hardware-printing"},
+  {"id":"workstation","query":"Windows 11 workstation slow low disk storage","expected":"kb-endpoint-windows-performance"},
+  {"id":"erp","query":"ERP business application returns 503 all users","expected":"kb-business-application-erp"},
+  {"id":"permissions","query":"access denied mapped shared folder permissions","expected":"kb-access-shared-folder"},
+  {"id":"software","query":"desktop software application crashes on launch","expected":"kb-software-general-incidents"},
+  {"id":"ambiguous","query":"authentication problem after password change","expected":"kb-active-directory-account-lockout"},
+  {"id":"irrelevant-lunch","query":"please order vegetarian lunch catering","abstain":true},
+  {"id":"irrelevant-weather","query":"weather forecast for tomorrow","abstain":true}
+]

@@ -32,7 +32,8 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
+      - run: npm run test:retrieval
       - run: npm run build
-      - run: git diff --exit-code -- shared/data.json migrations/0002_synthetic_seed.sql
+      - run: git diff --exit-code -- shared/data.json shared/knowledge.json knowledge-seed.sql migrations/0002_synthetic_seed.sql
       - run: npx playwright install --with-deps chromium
       - run: npm run test:browser
