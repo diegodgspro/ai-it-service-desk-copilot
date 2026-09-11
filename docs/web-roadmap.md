@@ -1,5 +1,10 @@
 # DeskPilot roadmap
 
+## In development for v1.1.0
+
+- Deterministic intelligent intake with a natural-language description, canonical editable draft, dynamic questions, policy-owned priority, explicit confirmation, and audited creation.
+- No external LLM is enabled. LLM-backed structured output remains future work under the same schema and policy boundaries. Suggested causes remain unconfirmed hypotheses.
+
 ## Delivered in v1.0.0 — September 10, 2026
 
 Production: https://deskpilot.diegodgspro.workers.dev

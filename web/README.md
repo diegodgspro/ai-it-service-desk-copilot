@@ -1,5 +1,11 @@
 # DeskPilot web workspace
 
+## Intelligent ticket intake
+
+The v1.1.0 intake flow posts a problem description to `/api/intake/draft`, keeps the canonical draft in client state, and exposes relevant follow-up questions and editable fields. `/api/intake/validate` rejects unsupported shapes and recalculates priority. `/api/intake/incidents` persists only an explicitly confirmed draft, records its origin, starts at version 1, and appends a `created` audit event.
+
+The default provider is deterministic signal matching. It makes no external call and uses no API key, Workers AI, or paid service. Suspected causes are unconfirmed hypotheses. A future LLM provider may supply schema-bound fields, but server validation and deterministic priority policy remain authoritative.
+
 Production is live at https://deskpilot.diegodgspro.workers.dev with Auth0 login, protected reads/writes and remote D1 persistence accepted by the user. Synthetic data only; all automation is simulated. The React/TypeScript dashboard and Cloudflare Worker API support local development and production operations described in [the deployment runbook](../docs/cloudflare-deployment.md). The existing Python/Streamlit lab is unchanged. Only synthetic records belong in either lab.
 
 ## Windows setup
