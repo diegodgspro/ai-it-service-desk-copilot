@@ -1,14 +1,15 @@
 import { readFile, readdir, mkdir, writeFile } from "node:fs/promises";
 const root = new URL("../../", import.meta.url);
 const json = async (p) => JSON.parse(await readFile(new URL(p, root), "utf8"));
+const normalizeText = (value) =>
+  value.replace(/^\uFEFF/, "").replace(/\r\n?/g, "\n");
 const tickets = await json("sample_data/tickets.json");
 const profiles = await json("sample_data/profiles.json");
 const articles = {};
 for (const name of (await readdir(new URL("knowledge_base/", root))).sort()) {
   if (name.endsWith(".md"))
-    articles[name.slice(0, -3)] = await readFile(
-      new URL("knowledge_base/" + name, root),
-      "utf8",
+    articles[name.slice(0, -3)] = normalizeText(
+      await readFile(new URL("knowledge_base/" + name, root), "utf8"),
     );
 }
 await mkdir(new URL("../shared/", import.meta.url), { recursive: true });

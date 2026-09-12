@@ -4,6 +4,10 @@ All notable changes follow [Keep a Changelog](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+### Fixed
+
+- Normalize UTF-8 BOMs and CRLF or standalone CR line endings before reviewed Markdown parsing, hashing, chunking, and artifact generation, keeping RAG IDs, hashes, JSON, SQL, and production build validation deterministic across platforms.
+
 ### Added
 
 - D1 FTS5 lexical retrieval over 10 reviewed synthetic documents and 46 stable heading chunks, with approved-only filters, relevance controls, safe excerpts, and stable citations.
