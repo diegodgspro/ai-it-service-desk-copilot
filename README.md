@@ -1,5 +1,9 @@
 # DeskPilot
 
+## v1.2.0 in development — Enterprise RAG Foundation
+
+Authenticated incident analysis and reviewed structured intake now retrieve approved synthetic support evidence through D1 FTS5 lexical search. Results provide safe excerpts, metadata, observable match reasons, and stable citations. This is retrieval infrastructure for possible future RAG: it includes no LLM generation, embeddings, semantic/vector search, or external AI service. See [retrieval design and evaluation](docs/rag.md).
+
 ## v1.1.0 — Intelligent Ticket Intake
 
 Authenticated users can describe a synthetic IT problem, review a deterministic structured draft, answer relevant missing-information questions, edit it, and explicitly confirm incident creation. Drafts stay in the browser; only confirmed incidents are persisted and audited. Suggestions use transparent signal matching, not an external LLM or an AI diagnosis. Priority remains governed by the existing impact × urgency matrix, and automation remains simulated and human-controlled.
@@ -75,6 +79,7 @@ Optional Ollama settings are in `.env.example`. Its loopback-only adapter is tes
 npm ci
 npm run typecheck
 npm test
+npm run test:retrieval
 npm run build
 npm run test:browser
 npm audit

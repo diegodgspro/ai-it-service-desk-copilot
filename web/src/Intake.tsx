@@ -6,6 +6,7 @@ import {
   requestTypes,
 } from "../shared/intake";
 import type { Api } from "./api";
+import { KnowledgeEvidence } from "./KnowledgeEvidence";
 
 type Props = {
   api: Api;
@@ -146,6 +147,12 @@ export function Intake({ api, requesterName, onCancel, onCreated }: Props) {
               diagnosis. Priority is fixed by the impact × urgency policy.
             </span>
           </div>
+          <KnowledgeEvidence
+            api={api}
+            query={`${draft.affectedService} ${draft.category} ${draft.summary} ${draft.symptoms.join(" ")} ${draft.description}`}
+            filters={{ language: "en", approvalStatus: "approved" }}
+            label="Suggested approved articles"
+          />
           {draft.followUpQuestions.length > 0 && (
             <section className="followups" aria-labelledby="followup-title">
               <h3 id="followup-title">Missing information</h3>

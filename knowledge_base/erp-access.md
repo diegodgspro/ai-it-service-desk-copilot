@@ -1,3 +1,19 @@
+---
+id: kb-business-application-erp
+title: Application: ERP
+source_type: runbook
+service: Business application
+category: ERP
+product: Northstar Demo ERP
+operating_system: any
+language: en
+approval_status: approved
+version: 1.0
+last_reviewed: 2026-09-11
+tags: erp, access, service unavailable
+classification: synthetic-demo
+---
+
 # Application: ERP
 
 Portfolio knowledge article. Synthetic lab context; technician validation required.

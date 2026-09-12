@@ -4,6 +4,16 @@ All notable changes follow [Keep a Changelog](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+### Added
+
+- D1 FTS5 lexical retrieval over 10 reviewed synthetic documents and 46 stable heading chunks, with approved-only filters, relevance controls, safe excerpts, and stable citations.
+- Authenticated incident and intake knowledge evidence plus a 12-case deterministic evaluation suite.
+
+### Security
+
+- Allowlisted offline ingestion rejects malformed metadata and arbitrary repository content; retrieved text cannot change policy or authorization.
+- No LLM, embeddings, vector service, Workers AI, AI Gateway, API key, paid resource, remote migration, or deployment is included.
+
 ## [1.1.0] - 2026-09-11
 
 ### Added

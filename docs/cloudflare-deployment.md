@@ -124,6 +124,17 @@ schema changes compatible with both current and next Worker versions. Back up
 before consequential changes using D1 Time Travel; record a restore bookmark
 privately. A destructive migration requires an explicit recovery plan and review.
 
+D1 SQL export does not support databases that contain virtual tables, including
+the FTS5 `knowledge_fts` table. Do not treat a D1 export as the knowledge backup
+or attempt an export by deleting production objects during a release. The
+reviewed `knowledge_base/*.md` corpus, `web/scripts/ingest-knowledge.mjs`
+deterministic pipeline, generated `web/knowledge-seed.sql`, and numbered
+migrations are the rebuild source of truth. To reconstruct the index in a new or
+deliberately recovered database, apply migrations in order, run the reviewed
+deterministic ingestion, and verify document/chunk counts plus FTS
+synchronization. Never modify or reapply migrations already recorded as applied;
+use a new reviewed migration for any future in-place repair.
+
 ## Rollback and secret rotation
 
 Inspect `npx wrangler deployments list` and `npx wrangler versions list`. To

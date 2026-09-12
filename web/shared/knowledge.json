@@ -1,0 +1,587 @@
+{
+  "documents": [
+    {
+      "documentId": "kb-active-directory-account-lockout",
+      "title": "Identity: Account lockout",
+      "sourceType": "runbook",
+      "service": "Identity and access",
+      "category": "Active Directory",
+      "product": "Active Directory",
+      "operatingSystem": "Windows",
+      "language": "en",
+      "approvalStatus": "approved",
+      "version": "1.0",
+      "lastReviewed": "2026-09-11",
+      "tags": [
+        "account lockout",
+        "authentication",
+        "password change"
+      ],
+      "classification": "synthetic-demo",
+      "sourcePath": "knowledge_base/active-directory.md",
+      "content": "# Identity: Account lockout\n\nPortfolio knowledge article. Synthetic lab context; technician validation required.\n\n## Symptoms\n- active directory account locked repeated failed domain logon\n- domain user locked out after password change\n- windows sign in account lockout on domain controller\n- directory authentication account disabled or locked\n- cannot logon domain account says locked\n\n## Working hypothesis\nDirectory authentication is blocked by a lockout; stale credentials are one possible source.\n\n## Troubleshooting\n1. Confirm user identity using the approved verification procedure; never request a password.\n2. Ask the directory team to inspect lockout events and the originating device.\n3. Check for stored credentials in scheduled tasks, mobile mail and mapped drives.\n4. After identity verification, request an authorized unlock and update stale credentials.\n5. Validate a fresh sign-in and monitor for repeated lockouts; escalate suspicious activity.\n\n## Escalation and closure\nEscalate when scope exceeds authorization, symptoms persist, or security indicators appear. Close only after user validation. Record evidence and outcome.",
+      "contentHash": "80f8fe08fa9d705dedecee24594a8f5f2fa7f657c76d9d98bb76d54bbf325250"
+    },
+    {
+      "documentId": "kb-network-dns-troubleshooting",
+      "title": "Network: DNS",
+      "sourceType": "runbook",
+      "service": "Network",
+      "category": "DNS",
+      "product": "Corporate network",
+      "language": "en",
+      "approvalStatus": "approved",
+      "version": "1.0",
+      "lastReviewed": "2026-09-11",
+      "tags": [
+        "dns",
+        "hostname",
+        "name resolution"
+      ],
+      "classification": "synthetic-demo",
+      "sourcePath": "knowledge_base/dns-troubleshooting.md",
+      "content": "# Network: DNS\n\nPortfolio knowledge article. Synthetic lab context; technician validation required.\n\n## Symptoms\n- dns server not responding hostname lookup failure\n- internal website name resolution fails but ip works\n- cannot resolve intranet hostname dns record\n- dns nxdomain on company network\n- network connectivity dns lookup timeout\n\n## Working hypothesis\nAn incorrect DNS server, stale cache or missing record may prevent name resolution.\n\n## Troubleshooting\n1. Confirm scope and record the affected hostname and exact error.\n2. Compare connectivity by approved IP and hostname; ping failure alone does not prove an outage.\n3. Inspect adapter and DNS configuration; use Resolve-DnsName against the configured resolver.\n4. Compare with a working device; do not replace corporate DNS with public resolvers.\n5. Consider an approved cache flush only when evidence supports it; escalate authoritative record or resolver faults.\n\n## Escalation and closure\nEscalate when scope exceeds authorization, symptoms persist, or security indicators appear. Close only after user validation. Record evidence and outcome.",
+      "contentHash": "71a19075b936770742eaa43415f02697740b30b10717a81d4454f16e7050c25d"
+    },
+    {
+      "documentId": "kb-business-application-erp",
+      "title": "Application: ERP",
+      "sourceType": "runbook",
+      "service": "Business application",
+      "category": "ERP",
+      "product": "Northstar Demo ERP",
+      "language": "en",
+      "approvalStatus": "approved",
+      "version": "1.0",
+      "lastReviewed": "2026-09-11",
+      "tags": [
+        "erp",
+        "access",
+        "service unavailable"
+      ],
+      "classification": "synthetic-demo",
+      "sourcePath": "knowledge_base/erp-access.md",
+      "content": "# Application: ERP\n\nPortfolio knowledge article. Synthetic lab context; technician validation required.\n\n## Symptoms\n- erp application unavailable all users order entry\n- enterprise resource planning login server error\n- erp access denied application role\n- business application erp service unavailable\n- erp application returns 503 backend connection\n\n## Working hypothesis\nThe ERP service, backend connectivity or application authorization may be failing.\n\n## Troubleshooting\n1. Capture the application error, timestamp and affected business workflow.\n2. Confirm whether the issue affects multiple users and check the service status.\n3. Test the approved application endpoint without collecting business records.\n4. Gather sanitized correlation IDs and compare recent approved deployments.\n5. Escalate to application support with impact and evidence; do not restart the database or change production records.\n\n## Escalation and closure\nEscalate when scope exceeds authorization, symptoms persist, or security indicators appear. Close only after user validation. Record evidence and outcome.",
+      "contentHash": "80aa405c9bec45724679178ed5d32bc6ec7fce1f5f9f5a6365a2ba9c0ad1c4cd"
+    },
+    {
+      "documentId": "kb-service-desk-escalation-policy",
+      "title": "Escalation and priority policy",
+      "sourceType": "policy",
+      "service": "Service Desk",
+      "category": "General",
+      "product": "DeskPilot",
+      "language": "en",
+      "approvalStatus": "approved",
+      "version": "1.0",
+      "lastReviewed": "2026-09-11",
+      "tags": [
+        "escalation",
+        "priority",
+        "handover"
+      ],
+      "classification": "synthetic-demo",
+      "sourcePath": "knowledge_base/escalation-guidelines.md",
+      "content": "# Escalation and priority policy\n\nThis is an illustrative local policy, not a contracted SLA or an official ITIL matrix.\nImpact: High = organization or multiple locations; Medium = department; Low = individual.\nUrgency: High = work stopped with no viable workaround or imminent deadline; Medium = degraded work; Low = workaround available.\n\n| Impact / Urgency | High | Medium | Low |\n|---|---|---|---|\n| High | P1 | P2 | P3 |\n| Medium | P2 | P3 | P4 |\n| Low | P3 | P4 | P4 |\n\nIllustrative initial response targets: P1 15 minutes, P2 1 hour, P3 4 business hours, P4 1 business day.\nThe app displays targets only; it does not track SLA clocks or business calendars.\nP1/P2 incidents require escalation. Low model evidence requires manual triage.\nSuspected compromise requires security review. Never request passwords or MFA codes.\nRecord impact, timeline, symptoms, evidence and actions before handover. Do not close on a recommendation alone.",
+      "contentHash": "ea9a48239ed4ce827d3fbde19f7f163d927b5f8d30760b9a2dbf419567cc6c6c"
+    },
+    {
+      "documentId": "kb-microsoft365-outlook-authentication",
+      "title": "Identity: Microsoft 365",
+      "sourceType": "runbook",
+      "service": "Microsoft 365",
+      "category": "Email",
+      "product": "Microsoft 365",
+      "language": "en",
+      "approvalStatus": "approved",
+      "version": "1.0",
+      "lastReviewed": "2026-09-11",
+      "tags": [
+        "outlook",
+        "email",
+        "sign in"
+      ],
+      "classification": "synthetic-demo",
+      "sourcePath": "knowledge_base/microsoft365.md",
+      "content": "# Identity: Microsoft 365\n\nPortfolio knowledge article. Synthetic lab context; technician validation required.\n\n## Symptoms\n- outlook keeps asking password microsoft 365 login\n- microsoft 365 mfa authentication sign in error\n- outlook authentication loop office token expired\n- office 365 mailbox cannot sign in\n- outlook web access works desktop sign in fails\n\n## Working hypothesis\nAn expired sign-in session or a tenant authentication policy may be interrupting Outlook access.\n\n## Troubleshooting\n1. Capture the error, sign-in time and whether Outlook on the web works.\n2. Check Microsoft 365 service health through the authorized administrator.\n3. Validate account, license and MFA status through approved support channels.\n4. Try an approved sign-out and sign-in; preserve drafts and avoid deleting profiles prematurely.\n5. Escalate Conditional Access or repeated authentication failures with correlation IDs, without tokens or passwords.\n\n## Escalation and closure\nEscalate when scope exceeds authorization, symptoms persist, or security indicators appear. Close only after user validation. Record evidence and outcome.",
+      "contentHash": "9a5276008a8d5177e7a64276bc1b7dfac4ce494c28e57cc003a882817d824c6d"
+    },
+    {
+      "documentId": "kb-access-shared-folder",
+      "title": "Access: Shared folder",
+      "sourceType": "runbook",
+      "service": "Identity and access",
+      "category": "Permissions",
+      "product": "SMB file share",
+      "operatingSystem": "Windows",
+      "language": "en",
+      "approvalStatus": "approved",
+      "version": "1.0",
+      "lastReviewed": "2026-09-11",
+      "tags": [
+        "permissions",
+        "mapped drive",
+        "shared folder"
+      ],
+      "classification": "synthetic-demo",
+      "sourcePath": "knowledge_base/network-drive.md",
+      "content": "# Access: Shared folder\n\nPortfolio knowledge article. Synthetic lab context; technician validation required.\n\n## Symptoms\n- mapped network drive access denied shared folder\n- smb file share permission denied unc path\n- network drive disconnected file server access\n- shared folder ntfs permissions cannot open\n- mapped drive missing after login share access\n\n## Working hypothesis\nAn SMB session, group membership or share/NTFS permission mismatch may deny access.\n\n## Troubleshooting\n1. Capture the UNC path and error; confirm VPN or local network connectivity.\n2. Check name resolution and connectivity to the approved file server.\n3. Compare effective share and NTFS permissions with the documented entitlement.\n4. Check recent group changes and reconnect the session after an approved sign-in refresh.\n5. Request data-owner authorization for permission changes; never grant broad access as a shortcut.\n\n## Escalation and closure\nEscalate when scope exceeds authorization, symptoms persist, or security indicators appear. Close only after user validation. Record evidence and outcome.",
+      "contentHash": "ace9ce170b9c9e2cb92871c5332cdb3236656526ce994c52cdccf5f83aca62a1"
+    },
+    {
+      "documentId": "kb-hardware-printing",
+      "title": "Hardware: Printing",
+      "sourceType": "runbook",
+      "service": "Printing",
+      "category": "Printer",
+      "product": "Network printer",
+      "language": "en",
+      "approvalStatus": "approved",
+      "version": "1.0",
+      "lastReviewed": "2026-09-11",
+      "tags": [
+        "printer",
+        "print queue",
+        "spooler"
+      ],
+      "classification": "synthetic-demo",
+      "sourcePath": "knowledge_base/printer-troubleshooting.md",
+      "content": "# Hardware: Printing\n\nPortfolio knowledge article. Synthetic lab context; technician validation required.\n\n## Symptoms\n- printer offline cannot print documents queue stuck\n- print spooler service stopped jobs pending\n- network printer offline print queue error\n- printing fails printer unavailable\n- documents stuck in spooler printing queue\n\n## Working hypothesis\nThe printer connection, queue or spooler may be unavailable; confirm which layer is failing.\n\n## Troubleshooting\n1. Check printer power, display errors, paper and network connection.\n2. Confirm whether one user or the entire printer queue is affected.\n3. Check the configured printer port and queue status before changing settings.\n4. Inspect Print Spooler status; record pending jobs before proposing a restart.\n5. If approved, restart the spooler during an agreed window and print a test page; escalate hardware faults.\n\n## Escalation and closure\nEscalate when scope exceeds authorization, symptoms persist, or security indicators appear. Close only after user validation. Record evidence and outcome.",
+      "contentHash": "e3f501346c121a201807c13c45d2ffb592feee278f6eae745c3bd7002adac4a3"
+    },
+    {
+      "documentId": "kb-software-general-incidents",
+      "title": "Software: General incident",
+      "sourceType": "runbook",
+      "service": "Software",
+      "category": "General software",
+      "product": "Desktop application",
+      "language": "en",
+      "approvalStatus": "approved",
+      "version": "1.0",
+      "lastReviewed": "2026-09-11",
+      "tags": [
+        "application crash",
+        "software error",
+        "launch failure"
+      ],
+      "classification": "synthetic-demo",
+      "sourcePath": "knowledge_base/software-incidents.md",
+      "content": "# Software: General incident\n\nPortfolio knowledge article. Synthetic lab context; technician validation required.\n\n## Symptoms\n- desktop application crashes or will not launch\n- software error after an approved update\n- application freezes for one user\n- general program installation or runtime failure\n\n## Working hypothesis\nA local application state, dependency, configuration, or recent approved change may be responsible.\n\n## Troubleshooting\n1. Capture the exact error, application version, start time, and affected scope.\n2. Confirm whether the same approved application works for another synthetic user or workstation.\n3. Review recent approved changes and vendor support status without downloading unapproved tools.\n4. Preserve user files and logs approved for support before proposing repair or reinstallation.\n5. Validate recovery with the user; escalate repeat crashes, security indicators, or unsupported software.\n\n## Escalation and closure\nEscalate when scope exceeds authorization, symptoms persist, or security indicators appear. Close only after user validation. Record evidence and outcome.",
+      "contentHash": "9dccfd0251b227dd53e6373156f118084350ac77d2c2e616fdc568389fefbd3b"
+    },
+    {
+      "documentId": "kb-network-vpn-troubleshooting",
+      "title": "Network: VPN",
+      "sourceType": "runbook",
+      "service": "Network",
+      "category": "VPN",
+      "product": "Corporate VPN",
+      "language": "en",
+      "approvalStatus": "approved",
+      "version": "1.0",
+      "lastReviewed": "2026-09-11",
+      "tags": [
+        "vpn",
+        "remote access",
+        "authentication"
+      ],
+      "classification": "synthetic-demo",
+      "sourcePath": "knowledge_base/vpn-troubleshooting.md",
+      "content": "# Network: VPN\n\nPortfolio knowledge article. Synthetic lab context; technician validation required.\n\n## Symptoms\n- vpn connection failed after changing password\n- remote access vpn tunnel authentication rejected\n- vpn client cannot connect gateway timeout\n- vpn disconnect remote worker authentication error\n- unable to establish corporate vpn tunnel\n\n## Working hypothesis\nSaved VPN credentials or a client authentication state may be stale after a password change.\n\n## Troubleshooting\n1. Confirm internet access before troubleshooting the VPN tunnel.\n2. Capture the VPN error and time; verify the approved gateway and service status.\n3. Validate account status and MFA through approved processes without sharing credentials.\n4. Re-enter updated credentials in the approved client; do not disable MFA or certificate validation.\n5. Reconnect and validate access to an approved internal resource; escalate persistent gateway failures.\n\n## Escalation and closure\nEscalate when scope exceeds authorization, symptoms persist, or security indicators appear. Close only after user validation. Record evidence and outcome.",
+      "contentHash": "f0a57b581f4e89216e74e9d98b153583059bc10e4ba715dffed1d487845ffc83"
+    },
+    {
+      "documentId": "kb-endpoint-windows-performance",
+      "title": "Endpoint: Windows 11",
+      "sourceType": "runbook",
+      "service": "Workstation",
+      "category": "Performance",
+      "product": "Windows 11",
+      "operatingSystem": "Windows 11",
+      "language": "en",
+      "approvalStatus": "approved",
+      "version": "1.0",
+      "lastReviewed": "2026-09-11",
+      "tags": [
+        "windows",
+        "storage",
+        "performance"
+      ],
+      "classification": "synthetic-demo",
+      "sourcePath": "knowledge_base/windows-support.md",
+      "content": "# Endpoint: Windows 11\n\nPortfolio knowledge article. Synthetic lab context; technician validation required.\n\n## Symptoms\n- windows 11 slow laptop disk full low space\n- windows desktop freezing high cpu memory\n- windows update error computer performance\n- windows 11 crashes blue screen system\n- computer running slow storage drive nearly full\n\n## Working hypothesis\nLow disk space, a recent change or resource pressure may be causing Windows performance issues.\n\n## Troubleshooting\n1. Capture symptoms, start time and recent software or Windows updates.\n2. Check free disk space, Task Manager and relevant Event Viewer entries.\n3. Compare the impact before and after the recent change; preserve diagnostic evidence.\n4. Use approved cleanup options after checking user data and backup status.\n5. Validate performance with the user; escalate repeat crashes or suspected hardware faults.\n\n## Escalation and closure\nEscalate when scope exceeds authorization, symptoms persist, or security indicators appear. Close only after user validation. Record evidence and outcome.",
+      "contentHash": "97940416a0f78b053d7fc8e3bd0651421a8668852e6663ec3d807e196558d347"
+    }
+  ],
+  "chunks": [
+    {
+      "chunkId": "kb-active-directory-account-lockout--00-identity-account-lockout",
+      "documentId": "kb-active-directory-account-lockout",
+      "ordinal": 0,
+      "heading": "Identity: Account lockout",
+      "content": "Portfolio knowledge article. Synthetic lab context; technician validation required.",
+      "contentHash": "cb89be873cdd1208daeb16d914bc4437f11e02e2d51f907d4b797e94b10a88c4"
+    },
+    {
+      "chunkId": "kb-active-directory-account-lockout--01-symptoms",
+      "documentId": "kb-active-directory-account-lockout",
+      "ordinal": 1,
+      "heading": "Symptoms",
+      "content": "- active directory account locked repeated failed domain logon\n- domain user locked out after password change\n- windows sign in account lockout on domain controller\n- directory authentication account disabled or locked\n- cannot logon domain account says locked",
+      "contentHash": "d377fbdc7513ca1371671eba16892f53ee8059cd6f898206eb492fc569dc1a6c"
+    },
+    {
+      "chunkId": "kb-active-directory-account-lockout--02-working-hypothesis",
+      "documentId": "kb-active-directory-account-lockout",
+      "ordinal": 2,
+      "heading": "Working hypothesis",
+      "content": "Directory authentication is blocked by a lockout; stale credentials are one possible source.",
+      "contentHash": "1c249b2a6d27de86e0a2dd1f7646e829261fd9124b322428586811defd4a0c26"
+    },
+    {
+      "chunkId": "kb-active-directory-account-lockout--03-troubleshooting",
+      "documentId": "kb-active-directory-account-lockout",
+      "ordinal": 3,
+      "heading": "Troubleshooting",
+      "content": "1. Confirm user identity using the approved verification procedure; never request a password.\n2. Ask the directory team to inspect lockout events and the originating device.\n3. Check for stored credentials in scheduled tasks, mobile mail and mapped drives.\n4. After identity verification, request an authorized unlock and update stale credentials.\n5. Validate a fresh sign-in and monitor for repeated lockouts; escalate suspicious activity.",
+      "contentHash": "e6fd89fc9336c959bec3ec83b7e1cafc81a33d4b1adee28b942cf06e20dd598b"
+    },
+    {
+      "chunkId": "kb-active-directory-account-lockout--04-escalation-and-closure",
+      "documentId": "kb-active-directory-account-lockout",
+      "ordinal": 4,
+      "heading": "Escalation and closure",
+      "content": "Escalate when scope exceeds authorization, symptoms persist, or security indicators appear. Close only after user validation. Record evidence and outcome.",
+      "contentHash": "970b3d0e6ec4732b76d4634cfd6a7035ef379c06587f29a0cd10c4af904f7150"
+    },
+    {
+      "chunkId": "kb-network-dns-troubleshooting--00-network-dns",
+      "documentId": "kb-network-dns-troubleshooting",
+      "ordinal": 0,
+      "heading": "Network: DNS",
+      "content": "Portfolio knowledge article. Synthetic lab context; technician validation required.",
+      "contentHash": "995dc6d7d003967dfb9ba2f450d8afd559488b7da03f5efaaaf1fd6e28c984bd"
+    },
+    {
+      "chunkId": "kb-network-dns-troubleshooting--01-symptoms",
+      "documentId": "kb-network-dns-troubleshooting",
+      "ordinal": 1,
+      "heading": "Symptoms",
+      "content": "- dns server not responding hostname lookup failure\n- internal website name resolution fails but ip works\n- cannot resolve intranet hostname dns record\n- dns nxdomain on company network\n- network connectivity dns lookup timeout",
+      "contentHash": "813a457e6afe4b46c8f5c561e1a25b8c2355eddeb371f8d74f8977e7fdd161c6"
+    },
+    {
+      "chunkId": "kb-network-dns-troubleshooting--02-working-hypothesis",
+      "documentId": "kb-network-dns-troubleshooting",
+      "ordinal": 2,
+      "heading": "Working hypothesis",
+      "content": "An incorrect DNS server, stale cache or missing record may prevent name resolution.",
+      "contentHash": "a2dc7824626e8722c54ca9300a24b1f5fc65cc0c726d3510c8cc49ac63e99ee2"
+    },
+    {
+      "chunkId": "kb-network-dns-troubleshooting--03-troubleshooting",
+      "documentId": "kb-network-dns-troubleshooting",
+      "ordinal": 3,
+      "heading": "Troubleshooting",
+      "content": "1. Confirm scope and record the affected hostname and exact error.\n2. Compare connectivity by approved IP and hostname; ping failure alone does not prove an outage.\n3. Inspect adapter and DNS configuration; use Resolve-DnsName against the configured resolver.\n4. Compare with a working device; do not replace corporate DNS with public resolvers.\n5. Consider an approved cache flush only when evidence supports it; escalate authoritative record or resolver faults.",
+      "contentHash": "4daceb94fc9a1423d3dbd2b1a3b6a959568a61a2cfb5b4bdd96fbe44612427c0"
+    },
+    {
+      "chunkId": "kb-network-dns-troubleshooting--04-escalation-and-closure",
+      "documentId": "kb-network-dns-troubleshooting",
+      "ordinal": 4,
+      "heading": "Escalation and closure",
+      "content": "Escalate when scope exceeds authorization, symptoms persist, or security indicators appear. Close only after user validation. Record evidence and outcome.",
+      "contentHash": "970b3d0e6ec4732b76d4634cfd6a7035ef379c06587f29a0cd10c4af904f7150"
+    },
+    {
+      "chunkId": "kb-business-application-erp--00-application-erp",
+      "documentId": "kb-business-application-erp",
+      "ordinal": 0,
+      "heading": "Application: ERP",
+      "content": "Portfolio knowledge article. Synthetic lab context; technician validation required.",
+      "contentHash": "5a835ab7566b61dbe4ef15bb5507b6ef2dfa1b1f3a0ac8fef80574894b84d35f"
+    },
+    {
+      "chunkId": "kb-business-application-erp--01-symptoms",
+      "documentId": "kb-business-application-erp",
+      "ordinal": 1,
+      "heading": "Symptoms",
+      "content": "- erp application unavailable all users order entry\n- enterprise resource planning login server error\n- erp access denied application role\n- business application erp service unavailable\n- erp application returns 503 backend connection",
+      "contentHash": "240015102b12ce3b201c1b3e407335ca32b7ec3852d13fbd43443dea7c028fa2"
+    },
+    {
+      "chunkId": "kb-business-application-erp--02-working-hypothesis",
+      "documentId": "kb-business-application-erp",
+      "ordinal": 2,
+      "heading": "Working hypothesis",
+      "content": "The ERP service, backend connectivity or application authorization may be failing.",
+      "contentHash": "4e91c0f2f493f72a263605c46c3e7f5a200076bb10a7a997014dafe20f5b5dd7"
+    },
+    {
+      "chunkId": "kb-business-application-erp--03-troubleshooting",
+      "documentId": "kb-business-application-erp",
+      "ordinal": 3,
+      "heading": "Troubleshooting",
+      "content": "1. Capture the application error, timestamp and affected business workflow.\n2. Confirm whether the issue affects multiple users and check the service status.\n3. Test the approved application endpoint without collecting business records.\n4. Gather sanitized correlation IDs and compare recent approved deployments.\n5. Escalate to application support with impact and evidence; do not restart the database or change production records.",
+      "contentHash": "300c06d862a2d69271bd6fe5a3eb8057d1f16885582aa2990fa1aa218b70f038"
+    },
+    {
+      "chunkId": "kb-business-application-erp--04-escalation-and-closure",
+      "documentId": "kb-business-application-erp",
+      "ordinal": 4,
+      "heading": "Escalation and closure",
+      "content": "Escalate when scope exceeds authorization, symptoms persist, or security indicators appear. Close only after user validation. Record evidence and outcome.",
+      "contentHash": "970b3d0e6ec4732b76d4634cfd6a7035ef379c06587f29a0cd10c4af904f7150"
+    },
+    {
+      "chunkId": "kb-service-desk-escalation-policy--00-escalation-and-priority-policy",
+      "documentId": "kb-service-desk-escalation-policy",
+      "ordinal": 0,
+      "heading": "Escalation and priority policy",
+      "content": "This is an illustrative local policy, not a contracted SLA or an official ITIL matrix.\nImpact: High = organization or multiple locations; Medium = department; Low = individual.\nUrgency: High = work stopped with no viable workaround or imminent deadline; Medium = degraded work; Low = workaround available.\n\n| Impact / Urgency | High | Medium | Low |\n|---|---|---|---|\n| High | P1 | P2 | P3 |\n| Medium | P2 | P3 | P4 |\n| Low | P3 | P4 | P4 |\n\nIllustrative initial response targets: P1 15 minutes, P2 1 hour, P3 4 business hours, P4 1 business day.\nThe app displays targets only; it does not track SLA clocks or business calendars.\nP1/P2 incidents require escalation. Low model evidence requires manual triage.\nSuspected compromise requires security review. Never request passwords or MFA codes.\nRecord impact, timeline, symptoms, evidence and actions before handover. Do not close on a recommendation alone.",
+      "contentHash": "81fa7d0246fca861b04427a6509160ca2af04787b405d0489c94fad5b3f249db"
+    },
+    {
+      "chunkId": "kb-microsoft365-outlook-authentication--00-identity-microsoft-365",
+      "documentId": "kb-microsoft365-outlook-authentication",
+      "ordinal": 0,
+      "heading": "Identity: Microsoft 365",
+      "content": "Portfolio knowledge article. Synthetic lab context; technician validation required.",
+      "contentHash": "7aee5801d85e9a8e634776612b5d5111349598c3da424b78adbb63ddc3f61d8d"
+    },
+    {
+      "chunkId": "kb-microsoft365-outlook-authentication--01-symptoms",
+      "documentId": "kb-microsoft365-outlook-authentication",
+      "ordinal": 1,
+      "heading": "Symptoms",
+      "content": "- outlook keeps asking password microsoft 365 login\n- microsoft 365 mfa authentication sign in error\n- outlook authentication loop office token expired\n- office 365 mailbox cannot sign in\n- outlook web access works desktop sign in fails",
+      "contentHash": "e14056157307e133cdb60953b6ca5559b822b13467c51583e838a6309a2e38a7"
+    },
+    {
+      "chunkId": "kb-microsoft365-outlook-authentication--02-working-hypothesis",
+      "documentId": "kb-microsoft365-outlook-authentication",
+      "ordinal": 2,
+      "heading": "Working hypothesis",
+      "content": "An expired sign-in session or a tenant authentication policy may be interrupting Outlook access.",
+      "contentHash": "c1edf3606b08f927fbb52bb59ed50fe43a01354ce1208f8c88f56cb816ef07f7"
+    },
+    {
+      "chunkId": "kb-microsoft365-outlook-authentication--03-troubleshooting",
+      "documentId": "kb-microsoft365-outlook-authentication",
+      "ordinal": 3,
+      "heading": "Troubleshooting",
+      "content": "1. Capture the error, sign-in time and whether Outlook on the web works.\n2. Check Microsoft 365 service health through the authorized administrator.\n3. Validate account, license and MFA status through approved support channels.\n4. Try an approved sign-out and sign-in; preserve drafts and avoid deleting profiles prematurely.\n5. Escalate Conditional Access or repeated authentication failures with correlation IDs, without tokens or passwords.",
+      "contentHash": "eb2d3d1a6294dc37d9d87a62695f5bb7d6dc2b6513e61ca84836a5a97864534c"
+    },
+    {
+      "chunkId": "kb-microsoft365-outlook-authentication--04-escalation-and-closure",
+      "documentId": "kb-microsoft365-outlook-authentication",
+      "ordinal": 4,
+      "heading": "Escalation and closure",
+      "content": "Escalate when scope exceeds authorization, symptoms persist, or security indicators appear. Close only after user validation. Record evidence and outcome.",
+      "contentHash": "970b3d0e6ec4732b76d4634cfd6a7035ef379c06587f29a0cd10c4af904f7150"
+    },
+    {
+      "chunkId": "kb-access-shared-folder--00-access-shared-folder",
+      "documentId": "kb-access-shared-folder",
+      "ordinal": 0,
+      "heading": "Access: Shared folder",
+      "content": "Portfolio knowledge article. Synthetic lab context; technician validation required.",
+      "contentHash": "9032e877ab39addee279571469dedf2ae20a3bea7072d48dcc5c6635e977e2bc"
+    },
+    {
+      "chunkId": "kb-access-shared-folder--01-symptoms",
+      "documentId": "kb-access-shared-folder",
+      "ordinal": 1,
+      "heading": "Symptoms",
+      "content": "- mapped network drive access denied shared folder\n- smb file share permission denied unc path\n- network drive disconnected file server access\n- shared folder ntfs permissions cannot open\n- mapped drive missing after login share access",
+      "contentHash": "87e84f1647f4f9cf36fac49986970e13e7a2e4d061e58815d9547956c535d0df"
+    },
+    {
+      "chunkId": "kb-access-shared-folder--02-working-hypothesis",
+      "documentId": "kb-access-shared-folder",
+      "ordinal": 2,
+      "heading": "Working hypothesis",
+      "content": "An SMB session, group membership or share/NTFS permission mismatch may deny access.",
+      "contentHash": "e7f420a7511dcff0c4b9809b004545a74b92b0f83876a95a0f41167673b100d4"
+    },
+    {
+      "chunkId": "kb-access-shared-folder--03-troubleshooting",
+      "documentId": "kb-access-shared-folder",
+      "ordinal": 3,
+      "heading": "Troubleshooting",
+      "content": "1. Capture the UNC path and error; confirm VPN or local network connectivity.\n2. Check name resolution and connectivity to the approved file server.\n3. Compare effective share and NTFS permissions with the documented entitlement.\n4. Check recent group changes and reconnect the session after an approved sign-in refresh.\n5. Request data-owner authorization for permission changes; never grant broad access as a shortcut.",
+      "contentHash": "c975fffe5ee20dd843f3f2fbccd5b2726784c00bde3b53fbf821cf663745c518"
+    },
+    {
+      "chunkId": "kb-access-shared-folder--04-escalation-and-closure",
+      "documentId": "kb-access-shared-folder",
+      "ordinal": 4,
+      "heading": "Escalation and closure",
+      "content": "Escalate when scope exceeds authorization, symptoms persist, or security indicators appear. Close only after user validation. Record evidence and outcome.",
+      "contentHash": "970b3d0e6ec4732b76d4634cfd6a7035ef379c06587f29a0cd10c4af904f7150"
+    },
+    {
+      "chunkId": "kb-hardware-printing--00-hardware-printing",
+      "documentId": "kb-hardware-printing",
+      "ordinal": 0,
+      "heading": "Hardware: Printing",
+      "content": "Portfolio knowledge article. Synthetic lab context; technician validation required.",
+      "contentHash": "5bf6bbfc1bd320febd34df4cbf030a88408feaddee9779bb086d161edb2b7dd8"
+    },
+    {
+      "chunkId": "kb-hardware-printing--01-symptoms",
+      "documentId": "kb-hardware-printing",
+      "ordinal": 1,
+      "heading": "Symptoms",
+      "content": "- printer offline cannot print documents queue stuck\n- print spooler service stopped jobs pending\n- network printer offline print queue error\n- printing fails printer unavailable\n- documents stuck in spooler printing queue",
+      "contentHash": "d9261d46bd350c64e6ecd312e01eaf1d5eaa22614b94b1b2902172584397bb3c"
+    },
+    {
+      "chunkId": "kb-hardware-printing--02-working-hypothesis",
+      "documentId": "kb-hardware-printing",
+      "ordinal": 2,
+      "heading": "Working hypothesis",
+      "content": "The printer connection, queue or spooler may be unavailable; confirm which layer is failing.",
+      "contentHash": "0490eec522c36340d2338eb3017a1eb25806043f7cda14f56414ee3eab1d7bb1"
+    },
+    {
+      "chunkId": "kb-hardware-printing--03-troubleshooting",
+      "documentId": "kb-hardware-printing",
+      "ordinal": 3,
+      "heading": "Troubleshooting",
+      "content": "1. Check printer power, display errors, paper and network connection.\n2. Confirm whether one user or the entire printer queue is affected.\n3. Check the configured printer port and queue status before changing settings.\n4. Inspect Print Spooler status; record pending jobs before proposing a restart.\n5. If approved, restart the spooler during an agreed window and print a test page; escalate hardware faults.",
+      "contentHash": "ab76ca84255517bf96c0a9831ba370611687fa8b63459e5b68b36b7494156aac"
+    },
+    {
+      "chunkId": "kb-hardware-printing--04-escalation-and-closure",
+      "documentId": "kb-hardware-printing",
+      "ordinal": 4,
+      "heading": "Escalation and closure",
+      "content": "Escalate when scope exceeds authorization, symptoms persist, or security indicators appear. Close only after user validation. Record evidence and outcome.",
+      "contentHash": "970b3d0e6ec4732b76d4634cfd6a7035ef379c06587f29a0cd10c4af904f7150"
+    },
+    {
+      "chunkId": "kb-software-general-incidents--00-software-general-incident",
+      "documentId": "kb-software-general-incidents",
+      "ordinal": 0,
+      "heading": "Software: General incident",
+      "content": "Portfolio knowledge article. Synthetic lab context; technician validation required.",
+      "contentHash": "9d82cca3ad23b7fb7101dca8f3116ce4dd3e4f2c789bf641ea56712abd0775d1"
+    },
+    {
+      "chunkId": "kb-software-general-incidents--01-symptoms",
+      "documentId": "kb-software-general-incidents",
+      "ordinal": 1,
+      "heading": "Symptoms",
+      "content": "- desktop application crashes or will not launch\n- software error after an approved update\n- application freezes for one user\n- general program installation or runtime failure",
+      "contentHash": "388e806cf9a39bf5c904533a7f2b86933f2dd188b1516ffe893a73cf6694bd4f"
+    },
+    {
+      "chunkId": "kb-software-general-incidents--02-working-hypothesis",
+      "documentId": "kb-software-general-incidents",
+      "ordinal": 2,
+      "heading": "Working hypothesis",
+      "content": "A local application state, dependency, configuration, or recent approved change may be responsible.",
+      "contentHash": "25ffbbf79ac7ecf464a430f9a48971251154a32a73cf3e5f1a277dde4b505f06"
+    },
+    {
+      "chunkId": "kb-software-general-incidents--03-troubleshooting",
+      "documentId": "kb-software-general-incidents",
+      "ordinal": 3,
+      "heading": "Troubleshooting",
+      "content": "1. Capture the exact error, application version, start time, and affected scope.\n2. Confirm whether the same approved application works for another synthetic user or workstation.\n3. Review recent approved changes and vendor support status without downloading unapproved tools.\n4. Preserve user files and logs approved for support before proposing repair or reinstallation.\n5. Validate recovery with the user; escalate repeat crashes, security indicators, or unsupported software.",
+      "contentHash": "db8ef91ae595f85c5cd610f9237fcbc20f90f0c0ad79613a70a922702cb1493a"
+    },
+    {
+      "chunkId": "kb-software-general-incidents--04-escalation-and-closure",
+      "documentId": "kb-software-general-incidents",
+      "ordinal": 4,
+      "heading": "Escalation and closure",
+      "content": "Escalate when scope exceeds authorization, symptoms persist, or security indicators appear. Close only after user validation. Record evidence and outcome.",
+      "contentHash": "970b3d0e6ec4732b76d4634cfd6a7035ef379c06587f29a0cd10c4af904f7150"
+    },
+    {
+      "chunkId": "kb-network-vpn-troubleshooting--00-network-vpn",
+      "documentId": "kb-network-vpn-troubleshooting",
+      "ordinal": 0,
+      "heading": "Network: VPN",
+      "content": "Portfolio knowledge article. Synthetic lab context; technician validation required.",
+      "contentHash": "58ddfc28f6a7bb972a8baf0291f7f93bd9606ac715bb4ee241f231bfa436f026"
+    },
+    {
+      "chunkId": "kb-network-vpn-troubleshooting--01-symptoms",
+      "documentId": "kb-network-vpn-troubleshooting",
+      "ordinal": 1,
+      "heading": "Symptoms",
+      "content": "- vpn connection failed after changing password\n- remote access vpn tunnel authentication rejected\n- vpn client cannot connect gateway timeout\n- vpn disconnect remote worker authentication error\n- unable to establish corporate vpn tunnel",
+      "contentHash": "a85c6026d3ba60ded09cd706a9314b28446d7e062ecd3ffbf9b73d43a6c01a0c"
+    },
+    {
+      "chunkId": "kb-network-vpn-troubleshooting--02-working-hypothesis",
+      "documentId": "kb-network-vpn-troubleshooting",
+      "ordinal": 2,
+      "heading": "Working hypothesis",
+      "content": "Saved VPN credentials or a client authentication state may be stale after a password change.",
+      "contentHash": "5ca6f3a1364311eb0e6e0ed5f6107dd9277cdb34e195a979593d12c47252055c"
+    },
+    {
+      "chunkId": "kb-network-vpn-troubleshooting--03-troubleshooting",
+      "documentId": "kb-network-vpn-troubleshooting",
+      "ordinal": 3,
+      "heading": "Troubleshooting",
+      "content": "1. Confirm internet access before troubleshooting the VPN tunnel.\n2. Capture the VPN error and time; verify the approved gateway and service status.\n3. Validate account status and MFA through approved processes without sharing credentials.\n4. Re-enter updated credentials in the approved client; do not disable MFA or certificate validation.\n5. Reconnect and validate access to an approved internal resource; escalate persistent gateway failures.",
+      "contentHash": "833bcb7fb7101d2bdc67545b6317a45e5239fc005a6fc9273ee4d84139685a0d"
+    },
+    {
+      "chunkId": "kb-network-vpn-troubleshooting--04-escalation-and-closure",
+      "documentId": "kb-network-vpn-troubleshooting",
+      "ordinal": 4,
+      "heading": "Escalation and closure",
+      "content": "Escalate when scope exceeds authorization, symptoms persist, or security indicators appear. Close only after user validation. Record evidence and outcome.",
+      "contentHash": "970b3d0e6ec4732b76d4634cfd6a7035ef379c06587f29a0cd10c4af904f7150"
+    },
+    {
+      "chunkId": "kb-endpoint-windows-performance--00-endpoint-windows-11",
+      "documentId": "kb-endpoint-windows-performance",
+      "ordinal": 0,
+      "heading": "Endpoint: Windows 11",
+      "content": "Portfolio knowledge article. Synthetic lab context; technician validation required.",
+      "contentHash": "adb9db914b19a267161dbdc17b769e7ab478b60a060a39e0dce76333de1e0cbe"
+    },
+    {
+      "chunkId": "kb-endpoint-windows-performance--01-symptoms",
+      "documentId": "kb-endpoint-windows-performance",
+      "ordinal": 1,
+      "heading": "Symptoms",
+      "content": "- windows 11 slow laptop disk full low space\n- windows desktop freezing high cpu memory\n- windows update error computer performance\n- windows 11 crashes blue screen system\n- computer running slow storage drive nearly full",
+      "contentHash": "305defcffe993a135953f9879cb1e7865b03a7aae4c872d48f3089fa4d022d2b"
+    },
+    {
+      "chunkId": "kb-endpoint-windows-performance--02-working-hypothesis",
+      "documentId": "kb-endpoint-windows-performance",
+      "ordinal": 2,
+      "heading": "Working hypothesis",
+      "content": "Low disk space, a recent change or resource pressure may be causing Windows performance issues.",
+      "contentHash": "9c4b55cd1809f42fdbf39c02e0ff32ba743e03cb9ff580e4d6b32a58e22f54e1"
+    },
+    {
+      "chunkId": "kb-endpoint-windows-performance--03-troubleshooting",
+      "documentId": "kb-endpoint-windows-performance",
+      "ordinal": 3,
+      "heading": "Troubleshooting",
+      "content": "1. Capture symptoms, start time and recent software or Windows updates.\n2. Check free disk space, Task Manager and relevant Event Viewer entries.\n3. Compare the impact before and after the recent change; preserve diagnostic evidence.\n4. Use approved cleanup options after checking user data and backup status.\n5. Validate performance with the user; escalate repeat crashes or suspected hardware faults.",
+      "contentHash": "19b899475218b67c5161b72719312eb51a27d8018ab7f184a82d53abed4e1357"
+    },
+    {
+      "chunkId": "kb-endpoint-windows-performance--04-escalation-and-closure",
+      "documentId": "kb-endpoint-windows-performance",
+      "ordinal": 4,
+      "heading": "Escalation and closure",
+      "content": "Escalate when scope exceeds authorization, symptoms persist, or security indicators appear. Close only after user validation. Record evidence and outcome.",
+      "contentHash": "970b3d0e6ec4732b76d4634cfd6a7035ef379c06587f29a0cd10c4af904f7150"
+    }
+  ]
+}

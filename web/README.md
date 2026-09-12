@@ -1,5 +1,9 @@
 # DeskPilot web workspace
 
+## Enterprise retrieval foundation
+
+The v1.2.0 development line adds authenticated `POST /api/knowledge/retrieve` for bounded, approved-only D1 FTS5 lexical evidence. Run `npm run knowledge:prepare` to validate and generate the reviewed synthetic corpus, then `npm run knowledge:ingest:local` after local migrations. Development commands do this automatically. See [the design](../docs/rag.md). This is not LLM generation or semantic/vector search.
+
 ## Intelligent ticket intake
 
 The v1.1.0 intake flow posts a problem description to `/api/intake/draft`, keeps the canonical draft in client state, and exposes relevant follow-up questions and editable fields. `/api/intake/validate` rejects unsupported shapes and recalculates priority. `/api/intake/incidents` persists only an explicitly confirmed draft, records its origin, starts at version 1, and appends a `created` audit event.
@@ -37,6 +41,7 @@ From `web/`:
 ```powershell
 npm.cmd run typecheck
 npm.cmd test
+npm.cmd run test:retrieval
 npm.cmd run build
 npm.cmd run test:browser
 npm.cmd audit

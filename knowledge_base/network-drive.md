@@ -1,3 +1,19 @@
+---
+id: kb-access-shared-folder
+title: Access: Shared folder
+source_type: runbook
+service: Identity and access
+category: Permissions
+product: SMB file share
+operating_system: Windows
+language: en
+approval_status: approved
+version: 1.0
+last_reviewed: 2026-09-11
+tags: permissions, mapped drive, shared folder
+classification: synthetic-demo
+---
+
 # Access: Shared folder
 
 Portfolio knowledge article. Synthetic lab context; technician validation required.

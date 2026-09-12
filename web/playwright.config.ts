@@ -11,7 +11,7 @@ export default defineConfig({
   },
   webServer: {
     command:
-      "npm run build && wrangler d1 migrations apply DB --local --persist-to .test-build/browser-state && wrangler dev --local --ip 127.0.0.1 --port 8787 --persist-to .test-build/browser-state --var APP_ENV:local --var LOCAL_DEV_IDENTITY:enabled",
+      "npm run build && wrangler d1 migrations apply DB --local --persist-to .test-build/browser-state && wrangler d1 execute DB --local --persist-to .test-build/browser-state --file knowledge-seed.sql && wrangler dev --local --ip 127.0.0.1 --port 8787 --persist-to .test-build/browser-state --var APP_ENV:local --var LOCAL_DEV_IDENTITY:enabled",
     env: {
       VITE_AUTH0_DOMAIN: "fixture.us.auth0.com",
       VITE_AUTH0_CLIENT_ID: "synthetic-browser-client",

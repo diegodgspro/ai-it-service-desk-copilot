@@ -3,6 +3,8 @@ import { analyze } from "./analysis";
 import { generateIntake } from "./intake";
 import { validateIntakeDraft, type IntakeDraft } from "../shared/intake";
 import type { Ticket } from "../shared/types";
+import { validateRetrievalQuery } from "../shared/knowledge";
+import { D1FtsRetriever } from "./retrieval";
 interface Env extends AuthConfig {
   DB: D1Database;
   ASSETS: Fetcher;
@@ -66,7 +68,10 @@ export default {
       if (!["GET", "POST", "PATCH"].includes(request.method))
         return json({ error: "Method not allowed" }, 405);
       if (request.method !== "GET") {
-        if (!identity.permissions.includes("write"))
+        const retrievalRead =
+          url.pathname === "/api/knowledge/retrieve" &&
+          request.method === "POST";
+        if (!retrievalRead && !identity.permissions.includes("write"))
           return json({ error: "Write permission required" }, 403);
         if (request.headers.get("origin") !== url.origin)
           return json({ error: "Same-origin request required" }, 403);
@@ -84,6 +89,24 @@ export default {
           "SELECT * FROM tickets ORDER BY id LIMIT 100",
         ).all<Row>();
         return json(rows.results.map(ticket));
+      }
+      if (
+        url.pathname === "/api/knowledge/retrieve" &&
+        request.method === "POST"
+      ) {
+        const parsed = await parseBody(request);
+        if (parsed.error) return parsed.error;
+        if (!validateRetrievalQuery(parsed.body))
+          return json(
+            { error: "The retrieval query or filters are invalid." },
+            400,
+          );
+        const results = await new D1FtsRetriever(env.DB).retrieve(parsed.body);
+        return json({
+          results,
+          abstained: results.length === 0,
+          method: "D1 FTS5 lexical retrieval",
+        });
       }
       if (url.pathname === "/api/intake/draft" && request.method === "POST") {
         const parsed = await parseBody(request);

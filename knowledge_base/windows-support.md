@@ -1,3 +1,19 @@
+---
+id: kb-endpoint-windows-performance
+title: Endpoint: Windows 11
+source_type: runbook
+service: Workstation
+category: Performance
+product: Windows 11
+operating_system: Windows 11
+language: en
+approval_status: approved
+version: 1.0
+last_reviewed: 2026-09-11
+tags: windows, storage, performance
+classification: synthetic-demo
+---
+
 # Endpoint: Windows 11
 
 Portfolio knowledge article. Synthetic lab context; technician validation required.

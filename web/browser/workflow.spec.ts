@@ -18,6 +18,12 @@ test("create a reviewed incident through deterministic intake on mobile", async 
   await expect(
     page.getByText("Deterministic suggestion", { exact: true }),
   ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Suggested approved articles" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Network: VPN" }).first(),
+  ).toBeVisible();
   await expect(page.getByLabel("Calculated priority")).toHaveValue("P4");
   await expect(page.getByText("Unconfirmed:")).toBeVisible();
   const create = page.getByRole("button", {
@@ -64,8 +70,15 @@ test("review, simulate, invalidate and resolve an incident on desktop and mobile
   ).toBeVisible();
   await page.getByRole("button", { name: "02Knowledge" }).click();
   await expect(
-    page.getByRole("heading", { name: "Hardware: Printing" }),
+    page.getByRole("heading", { name: "Hardware: Printing" }).first(),
   ).toBeVisible();
+  await page
+    .getByRole("heading", { name: "Hardware: Printing" })
+    .first()
+    .click();
+  await expect(page.getByLabel("Stable citation").first()).toContainText(
+    "kb-hardware-printing@1.0#",
+  );
   await page.getByRole("button", { name: "03Automation" }).click();
   await page.getByRole("button", { name: "Approve simulation" }).click();
   await expect(

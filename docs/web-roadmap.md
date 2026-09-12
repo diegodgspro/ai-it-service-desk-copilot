@@ -1,6 +1,11 @@
 # DeskPilot roadmap
 
-## In development for v1.1.0
+## In development for v1.2.0
+
+- Approved synthetic ingestion, stable chunks, D1 FTS5 lexical retrieval, citations, filters, incident/intake evidence, and measured evaluation.
+- No LLM generation or vector search. Vectorize and Workers AI remain future interfaces requiring separate review and authorization.
+
+## Delivered in v1.1.0 — September 11, 2026
 
 - Deterministic intelligent intake with a natural-language description, canonical editable draft, dynamic questions, policy-owned priority, explicit confirmation, and audited creation.
 - No external LLM is enabled. LLM-backed structured output remains future work under the same schema and policy boundaries. Suggested causes remain unconfirmed hypotheses.

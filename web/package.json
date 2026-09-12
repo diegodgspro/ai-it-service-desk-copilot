@@ -1,21 +1,24 @@
 {
   "name": "service-desk-web",
   "private": true,
-  "version": "1.1.0",
+  "version": "1.2.0",
   "type": "module",
   "engines": {
     "node": ">=22"
   },
   "scripts": {
-    "sync": "node scripts/sync-data.mjs",
+    "sync": "node scripts/sync-data.mjs && node scripts/ingest-knowledge.mjs",
+    "knowledge:prepare": "node scripts/ingest-knowledge.mjs",
+    "knowledge:ingest:local": "npm run knowledge:prepare && wrangler d1 execute DB --local --file knowledge-seed.sql",
+    "test:retrieval": "node --test tests/retrieval.test.mjs tests/evaluation.test.mjs",
     "build": "npm run sync && vite build && wrangler deploy --dry-run --outdir .test-build",
     "typecheck": "tsc --noEmit",
     "test": "npm run sync && node --test tests/*.test.mjs && npm run test:frontend",
     "db:migrate": "wrangler d1 migrations apply DB --local",
-    "dev": "npm run build && npm run db:migrate && wrangler dev --local --ip 127.0.0.1 --port 8787 --var APP_ENV:local --var LOCAL_DEV_IDENTITY:enabled",
+    "dev": "npm run build && npm run db:migrate && npm run knowledge:ingest:local && wrangler dev --local --ip 127.0.0.1 --port 8787 --var APP_ENV:local --var LOCAL_DEV_IDENTITY:enabled",
     "test:browser": "playwright test",
     "test:frontend": "vitest run",
-    "dev:auth0": "npm run build && npm run db:migrate && wrangler dev --local --ip 127.0.0.1 --port 8787 --var APP_ENV:local --var LOCAL_DEV_IDENTITY:disabled"
+    "dev:auth0": "npm run build && npm run db:migrate && npm run knowledge:ingest:local && wrangler dev --local --ip 127.0.0.1 --port 8787 --var APP_ENV:local --var LOCAL_DEV_IDENTITY:disabled"
   },
   "dependencies": {
     "@auth0/auth0-react": "^2.24.1",

@@ -12,6 +12,8 @@ Intelligent intake is a pre-creation boundary. React holds drafts locally; the W
 
 ## Independent Python/Streamlit lab
 
+Enterprise retrieval is a separate evidence boundary. Reviewed synthetic Markdown is validated and deterministically chunked offline, then stored in normalized D1 tables with FTS5. The authenticated Worker applies approved-only enforcement, metadata filters, BM25 ordering, relevance thresholds, result bounds, duplicate suppression, and stable citations. Incident and intake consumers render text evidence after their existing structured state exists. Evidence never feeds priority, grants, action selection, confirmation, or closure. `Retriever`, future-only `Embedder`, and future-only `Reranker` interfaces preserve optionality without claiming semantic retrieval. See [RAG foundation](../rag.md).
+
 ```mermaid
 flowchart TD
     A["Mock ITSM / future vendor adapter"] --> B["Normalized Ticket"]

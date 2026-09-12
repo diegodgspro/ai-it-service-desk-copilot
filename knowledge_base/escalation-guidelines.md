@@ -1,3 +1,19 @@
+---
+id: kb-service-desk-escalation-policy
+title: Escalation and priority policy
+source_type: policy
+service: Service Desk
+category: General
+product: DeskPilot
+operating_system: any
+language: en
+approval_status: approved
+version: 1.0
+last_reviewed: 2026-09-11
+tags: escalation, priority, handover
+classification: synthetic-demo
+---
+
 # Escalation and priority policy
 
 This is an illustrative local policy, not a contracted SLA or an official ITIL matrix.
