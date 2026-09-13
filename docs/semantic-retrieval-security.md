@@ -49,6 +49,12 @@ ordinary tests, CI fixtures, production builds, and Worker startup must not
 download a model. CI uses a deterministic fixture provider unless a separately
 reviewed cache and network-free job is deliberately configured.
 
+The semantic and hybrid implementations are experimental. Their quality tests
+use deterministic fixtures; no real embedding model has been evaluated. Passing
+these tests verifies laboratory behavior and safety controls, but does not prove
+that semantic retrieval improves quality over production D1 FTS5 lexical
+retrieval.
+
 The selected model must be the pinned BGE Small English v1.5 family with its
 source, license, exact revision/files, 384 dimensions, normalization behavior,
 and checksums recorded before use. Model binaries and caches are ignored and are
