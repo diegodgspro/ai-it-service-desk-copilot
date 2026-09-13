@@ -1,0 +1,14 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+import { DeterministicEmbeddingProvider, HybridRetriever, LexicalLabRetriever, SemanticRetriever, normalizeVector, reciprocalRankFusion, retrieveWithFallback } from "../scripts/retrieval-lab-core.mjs";
+const corpus=JSON.parse(await readFile(new URL("../shared/knowledge.json",import.meta.url),"utf8"));
+const lexical=new LexicalLabRetriever(corpus),semantic=new SemanticRetriever(corpus,new DeterministicEmbeddingProvider()),hybrid=new HybridRetriever(lexical,semantic);
+
+test("semantic and hybrid preserve filters, citations, sanitization and repeatability",async()=>{for(const retriever of [semantic,hybrid]){const q={query:"file share says access denied",filters:{language:"en",approvalStatus:"approved"},topK:5},a=await retriever.retrieve(q),b=await retriever.retrieve(q);assert.deepEqual(b,a);assert.equal(a[0].documentId,"kb-access-shared-folder");assert.ok(a.every(x=>x.metadata.approvalStatus==="approved"&&x.metadata.language==="en"));assert.ok(a.every(x=>x.citation.label===`${x.documentId}@${x.metadata.version}#${x.chunkId}`));assert.equal(new Set(a.map(x=>x.chunkId)).size,a.length);assert.ok(a.every(x=>!/[<>]/.test(x.excerpt)));}assert.deepEqual(await semantic.retrieve({query:"vpn",filters:{approvalStatus:"draft"}}),[]);});
+
+test("provider failures and malformed embeddings fall back to lexical",async()=>{for(const provider of [{id:"offline",embed:async()=>{throw new Error("offline")}},{id:"dimension",embed:async xs=>xs.map(()=>[1,2])},{id:"nan",embed:async xs=>xs.map(()=>Array(384).fill(NaN))},{id:"zero",embed:async xs=>xs.map(()=>Array(384).fill(0))}]){const broken=new SemanticRetriever(corpus,provider),combo=new HybridRetriever(lexical,broken),out=await retrieveWithFallback({enabled:true,mode:"hybrid",lexical,semantic:broken,hybrid:combo,query:{query:"VPN tunnel authentication",topK:3}});assert.equal(out.fallback,true);assert.equal(out.method,"lexical");assert.equal(out.results[0].documentId,"kb-network-vpn-troubleshooting");}});
+
+test("feature flag defaults off and RRF is bounded and deterministic",async()=>{const out=await retrieveWithFallback({lexical,semantic,hybrid,query:{query:"remote employee secure tunnel"}});assert.equal(out.method,"lexical");assert.equal(out.fallback,false);assert.deepEqual(reciprocalRankFusion([[{chunkId:"b"},{chunkId:"a"}],[{chunkId:"a"}]],{k:60}).map(x=>x.result.chunkId),["a","b"]);assert.throws(()=>reciprocalRankFusion([],{k:0}),/between/);});
+
+test("vectors require 384 finite normalized dimensions",()=>{const v=normalizeVector(Array(384).fill(1));assert.ok(Math.abs(Math.hypot(...v)-1)<1e-12);assert.throws(()=>normalizeVector([1,2]),/384/);assert.throws(()=>normalizeVector(Array(384).fill(0)),/zero/);});

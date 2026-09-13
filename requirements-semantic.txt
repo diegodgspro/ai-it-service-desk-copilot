@@ -1,0 +1,2 @@
+# Optional local-lab dependency only. Never installed by production or ordinary CI.
+sentence-transformers==5.1.0
