@@ -4,6 +4,8 @@ All notable changes follow [Keep a Changelog](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-09-13
+
 ### Fixed
 
 - Normalize UTF-8 BOMs and CRLF or standalone CR line endings before reviewed Markdown parsing, hashing, chunking, and artifact generation, keeping RAG IDs, hashes, JSON, SQL, and production build validation deterministic across platforms.
@@ -16,7 +18,7 @@ All notable changes follow [Keep a Changelog](https://keepachangelog.com/en/1.1.
 ### Security
 
 - Allowlisted offline ingestion rejects malformed metadata and arbitrary repository content; retrieved text cannot change policy or authorization.
-- No LLM, embeddings, vector service, Workers AI, AI Gateway, API key, paid resource, remote migration, or deployment is included.
+- No LLM, embeddings, vector service, Workers AI, AI Gateway, API key, paid resource, or paid fallback is included.
 
 ## [1.1.0] - 2026-09-11
 
@@ -59,6 +61,7 @@ All notable changes follow [Keep a Changelog](https://keepachangelog.com/en/1.1.
 - Working hypotheses, not confirmed causes; no production LLM enabled.
 - Bounded queue/audit display, no historical analysis archive, multi-tenancy or enterprise SLA. Free quotas apply with no paid fallback.
 
-[Unreleased]: https://github.com/diegodgspro/ai-it-service-desk-copilot/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/diegodgspro/ai-it-service-desk-copilot/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/diegodgspro/ai-it-service-desk-copilot/releases/tag/v1.2.0
 [1.1.0]: https://github.com/diegodgspro/ai-it-service-desk-copilot/releases/tag/v1.1.0
 [1.0.0]: https://github.com/diegodgspro/ai-it-service-desk-copilot/releases/tag/v1.0.0
