@@ -81,8 +81,9 @@ try {
     for (const key of ["VITE_AUTH0_DOMAIN", "VITE_AUTH0_CLIENT_ID", "VITE_AUTH0_AUDIENCE"])
       env[key] = spa[key];
     run(process.execPath, ["scripts/sync-data.mjs"], { env });
+    run(process.execPath, ["scripts/ingest-knowledge.mjs"], { env });
     run(process.execPath, ["node_modules/vite/bin/vite.js", "build"], { env });
-    run("git", ["diff", "--exit-code", "--", "shared/data.json", "migrations/0002_synthetic_seed.sql"]);
+    run("git", ["diff", "--exit-code", "--", "shared/data.json", "shared/knowledge.json", "knowledge-seed.sql", "migrations/0002_synthetic_seed.sql"]);
     const output = run(process.execPath, [...wrangler, "deploy", ...(mode === "build"
       ? ["--dry-run", "--outdir", ".test-build"] : ["--no-autoconfig"])], { env });
     console.log(mode === "build" ? "Production SPA and Worker dry-run build passed." : "Merged main deployed.");

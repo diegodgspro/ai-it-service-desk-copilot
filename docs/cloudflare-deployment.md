@@ -62,8 +62,10 @@ the issuer and permission map through a private stdin pipe to `wrangler secret
 bulk`. Values are never command arguments or printed. On initial setup Wrangler
 creates an empty draft Worker to hold secrets; it does not publish the application.
 This command can update a live version on later releases, so use it deliberately.
-`node scripts/production.mjs build` builds with the three existing public SPA
-settings and dry-runs the Worker. `node scripts/production.mjs deploy` requires
+`node scripts/production.mjs build` normalizes checked-out Markdown line endings
+while regenerating local artifacts, validates that they remain consistent, builds
+with the three existing public SPA settings, and dry-runs the Worker.
+`node scripts/production.mjs deploy` requires
 clean main matching origin/main, rebuilds, and publishes. Fetch before running it.
 The helper suppresses raw subprocess diagnostics because Wrangler may print
 bindings; a failure needs private inspection rather than copying raw logs to chat.

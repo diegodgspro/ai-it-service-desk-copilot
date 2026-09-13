@@ -16,6 +16,8 @@ const required = [
   "classification",
 ];
 const hash = (value) => createHash("sha256").update(value).digest("hex");
+export const normalizeMarkdown = (value) =>
+  value.replace(/^\uFEFF/, "").replace(/\r\n?/g, "\n");
 const slug = (value) =>
   value
     .toLowerCase()
@@ -24,11 +26,12 @@ const slug = (value) =>
     .replace(/^-|-$/g, "")
     .slice(0, 60);
 export function parseArticle(raw, sourcePath) {
-  const match = raw.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]+)$/);
+  const normalized = normalizeMarkdown(raw);
+  const match = normalized.match(/^---\n([\s\S]*?)\n---\n([\s\S]+)$/);
   if (!match)
     throw new Error(`${sourcePath}: YAML-style metadata block is required`);
   const metadata = Object.fromEntries(
-    match[1].split(/\r?\n/).map((line) => {
+    match[1].split("\n").map((line) => {
       const i = line.indexOf(":");
       if (i < 1) throw new Error(`${sourcePath}: malformed metadata`);
       return [line.slice(0, i).trim(), line.slice(i + 1).trim()];
@@ -55,7 +58,7 @@ export function parseArticle(raw, sourcePath) {
     sections = [];
   let heading = metadata.title,
     lines = [];
-  for (const line of content.split(/\r?\n/)) {
+  for (const line of content.split("\n")) {
     const h = line.match(/^#{1,3}\s+(.+)$/);
     if (h) {
       if (lines.join("\n").trim())
