@@ -30,7 +30,7 @@ export function calculateRetrievalMetrics(cases, runs) {
     const evaluationCase = cases[index];
     const run = runs[index];
     const expected = new Set(evaluationCase.expectedDocumentIds ?? []);
-    const ranked = (run.results ?? []).map((result) => result.documentId);
+    const ranked = [...new Set((run.results ?? []).map((result) => result.documentId))];
     const predictedAbstention = ranked.length === 0;
     const expectedAbstention = evaluationCase.shouldAbstain === true;
 
