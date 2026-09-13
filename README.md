@@ -1,6 +1,6 @@
 # DeskPilot
 
-## v1.2.0 in development — Enterprise RAG Foundation
+## v1.2.0 — Enterprise RAG Foundation
 
 Authenticated incident analysis and reviewed structured intake now retrieve approved synthetic support evidence through D1 FTS5 lexical search. Results provide safe excerpts, metadata, observable match reasons, and stable citations. This is retrieval infrastructure for possible future RAG: it includes no LLM generation, embeddings, semantic/vector search, or external AI service. See [retrieval design and evaluation](docs/rag.md).
 
@@ -14,11 +14,11 @@ Authenticated users can describe a synthetic IT problem, review a deterministic 
 
 > **Synthetic data only · Simulated automation.** The login page is public; the workspace requires an authorized Auth0 account. This is a personal portfolio, not an enterprise ITSM service.
 
-## Production status — v1.1.0
+## Production status — v1.2.0
 
-Cloudflare Worker, remote D1 and Auth0 operate together. Production acceptance on September 11, 2026 confirmed login, structured draft generation, relevant follow-up questions, policy-controlled priority, explicit confirmation, incident creation and persistence across refresh and logout/login. The eight existing synthetic incidents remained compatible after migration `0003_structured_intake.sql`. Cloudflare Access is intentionally not used. Workers Free, D1 Free and Auth0 Free are the cost boundary; no paid fallback is authorized.
+Cloudflare Worker, remote D1 and Auth0 operate together. Production acceptance on September 13, 2026 confirmed login, all nine existing incidents, VPN and printer evidence, abstention for an irrelevant query, intake, audit, persistence across refresh and logout/login. Migration `0004_enterprise_knowledge_fts.sql` and deterministic ingestion provide 10 approved synthetic documents and 46 stable chunks without changing existing workflows. Cloudflare Access is intentionally not used. Workers Free, D1 Free and Auth0 Free are the cost boundary; no paid fallback is authorized.
 
-See the [v1.1.0 release](https://github.com/diegodgspro/ai-it-service-desk-copilot/releases/tag/v1.1.0), [changelog](CHANGELOG.md) and [deployment and recovery runbook](docs/cloudflare-deployment.md).
+See the [v1.2.0 release record](docs/releases/v1.2.0.md), [changelog](CHANGELOG.md) and [deployment and recovery runbook](docs/cloudflare-deployment.md).
 
 ## Features
 
@@ -88,7 +88,7 @@ node scripts/production.mjs build
 
 The final command requires ignored production settings and replaces the browser fixture build. Browser tests own port 8787 and use isolated test D1. Windows uses Edge; on Linux install Chromium with `npx playwright install --with-deps chromium`.
 
-Verified functional coverage for v1.1.0: **29 Python tests, 42 Worker/D1 checks, 18 frontend tests and seven browser scenarios**, plus TypeScript and production builds. Checks cover structured intake, all nine priority combinations, authentication failures, authorization, persistence, concurrency, stale approvals, simulated decisions, restoration gates, OAuth behavior and desktop/mobile workflows. Counts are not line-coverage percentages or model accuracy measurements. GitHub Actions runs Python 3.11/3.12/3.13 and the Node 22 web suite. [Validation record](docs/validation.md).
+Verified v1.2.0 coverage includes the Python, Worker/D1, frontend and browser suites, TypeScript and production builds, plus a 12-case lexical retrieval baseline: Recall@1 0.90, Recall@3 1.00 and MRR 0.95. Checks cover deterministic ingestion, retrieval filters and abstention as well as intake, authentication, authorization, persistence, concurrency, approvals, simulated decisions and desktop/mobile workflows. Counts and retrieval metrics are not line-coverage percentages or root-cause confidence. GitHub Actions runs Python 3.11/3.12/3.13 and the Node 22 web suite. [Validation record](docs/releases/v1.2.0.md).
 
 ## Screenshots
 

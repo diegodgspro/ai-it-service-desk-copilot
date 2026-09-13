@@ -1,8 +1,9 @@
 # DeskPilot roadmap
 
-## In development for v1.2.0
+## Delivered in v1.2.0 — September 13, 2026
 
 - Approved synthetic ingestion, stable chunks, D1 FTS5 lexical retrieval, citations, filters, incident/intake evidence, and measured evaluation.
+- Production validation passed with 10 reviewed documents, 46 deterministic chunks, synchronized FTS, relevant VPN/printer evidence and honest abstention.
 - No LLM generation or vector search. Vectorize and Workers AI remain future interfaces requiring separate review and authorization.
 
 ## Delivered in v1.1.0 — September 11, 2026
