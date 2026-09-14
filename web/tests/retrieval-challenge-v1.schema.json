@@ -57,7 +57,14 @@
         "rationale": { "type": "string", "minLength": 12, "maxLength": 500 },
         "difficulty": { "enum": ["easy", "medium", "hard"] },
         "tags": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" } }
-      }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "category": { "const": "metadata_filter" } }, "required": ["category"] },
+          "then": { "properties": { "metadataFilters": { "minProperties": 1 } } },
+          "else": { "properties": { "metadataFilters": { "maxProperties": 0 } } }
+        }
+      ]
     }
   }
 }
