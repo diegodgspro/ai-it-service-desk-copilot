@@ -18,6 +18,7 @@ exports/
 node_modules/
 web/dist/
 web/.wrangler/
+/.wrangler/
 web/.test-build/
 web/.dev.vars*
 !web/.dev.vars.example

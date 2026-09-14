@@ -41,6 +41,39 @@ const stable = (value) => {
 };
 const serialize = (value) => JSON.stringify(stable(value), null, 2) + "\n";
 
+const exactKeys = (value, keys) => value && typeof value === "object" && !Array.isArray(value) &&
+  Object.keys(value).sort().join("\0") === [...keys].sort().join("\0");
+
+function assertModelModuleContract(modules) {
+  const expected = [
+    { idx: 0, name: "0", path: "", type: "sentence_transformers.models.Transformer" },
+    { idx: 1, name: "1", path: "1_Pooling", type: "sentence_transformers.models.Pooling" },
+    { idx: 2, name: "2", path: "2_Normalize", type: "sentence_transformers.models.Normalize" },
+  ];
+  if (!Array.isArray(modules) || modules.length !== expected.length ||
+      modules.some((module, index) => !exactKeys(module, ["idx", "name", "path", "type"]) ||
+        Object.entries(expected[index]).some(([key, value]) => module[key] !== value)))
+    throw new Error("model module contract mismatch");
+}
+
+function assertDiskPoolingContract(pooling) {
+  const keys = ["word_embedding_dimension", "pooling_mode_cls_token", "pooling_mode_mean_tokens",
+    "pooling_mode_max_tokens", "pooling_mode_mean_sqrt_len_tokens"];
+  if (!exactKeys(pooling, keys) || pooling.word_embedding_dimension !== CONTRACT.dimensions ||
+      pooling.pooling_mode_cls_token !== true || pooling.pooling_mode_mean_tokens !== false ||
+      pooling.pooling_mode_max_tokens !== false || pooling.pooling_mode_mean_sqrt_len_tokens !== false)
+    throw new Error("model pooling contract mismatch");
+}
+
+function assertRuntimeModelContract(model) {
+  if (!exactKeys(model?.pooling, ["embedding_dimension", "pooling_mode", "include_prompt"]) ||
+      model.modelId !== CONTRACT.modelId || model.revision !== CONTRACT.modelRevision ||
+      model.dimensions !== CONTRACT.dimensions || model.normalization !== "SentenceTransformer.encode(normalize_embeddings=True)" ||
+      model.pooling.embedding_dimension !== CONTRACT.dimensions || model.pooling.pooling_mode !== "cls" ||
+      model.pooling.include_prompt !== true)
+    throw new Error("runtime model contract mismatch");
+}
+
 async function atomicWrite(path, value) {
   const temporary = `${path}.partial`;
   await writeFile(temporary, serialize(value), { encoding: "utf8", flag: "wx" });
@@ -155,10 +188,8 @@ async function main() {
   if (sha256(await readFile(modelPath)) !== CONTRACT.modelSha256) throw new Error("model digest mismatch");
   const modules = JSON.parse(await readFile(join(cache, "model", "modules.json"), "utf8"));
   const pooling = JSON.parse(await readFile(join(cache, "model", "1_Pooling", "config.json"), "utf8"));
-  if (modules?.[1]?.type !== "sentence_transformers.models.Pooling" || modules?.[2]?.type !== "sentence_transformers.models.Normalize" ||
-      pooling.word_embedding_dimension !== CONTRACT.dimensions || pooling.pooling_mode_cls_token !== true ||
-      ["pooling_mode_mean_tokens", "pooling_mode_max_tokens", "pooling_mode_mean_sqrt_len_tokens", "pooling_mode_weightedmean_tokens", "pooling_mode_lasttoken"].some((key) => pooling[key] === true))
-    throw new Error("model pooling/normalization contract mismatch");
+  assertModelModuleContract(modules);
+  assertDiskPoolingContract(pooling);
   const corpusBytes = await readFile(join(webRoot, "shared", "knowledge.json"));
   const seedBytes = await readFile(join(webRoot, "knowledge-seed.sql"));
   const corpus = JSON.parse(corpusBytes.toString("utf8"));
@@ -173,9 +204,7 @@ async function main() {
     provider = new BgeLocalProvider({ python, modelDir: join(cache, "model"), cwd: repoRoot,
       env: { HF_HOME: cache, HF_HUB_OFFLINE: "1", TRANSFORMERS_OFFLINE: "1", HF_DATASETS_OFFLINE: "1", HF_HUB_DISABLE_TELEMETRY: "1" } });
     const model = await provider.metadata();
-    if (model.modelId !== CONTRACT.modelId || model.revision !== CONTRACT.modelRevision || model.dimensions !== CONTRACT.dimensions ||
-        model.pooling?.pooling_mode_cls_token !== true)
-      throw new Error("runtime model contract mismatch");
+    assertRuntimeModelContract(model);
     evidence.model = { modelId: model.modelId, revision: model.revision, dimensions: model.dimensions,
       normalization: model.normalization, pooling: model.pooling, maxSequenceLength: model.maxSequenceLength,
       packages: model.packages, safetensorsSha256: CONTRACT.modelSha256 };
@@ -216,4 +245,5 @@ async function main() {
 if (process.argv[1] && resolve(process.argv[1]) === resolve(new URL(import.meta.url).pathname.replace(/^\/(.:)/, "$1")))
   await main();
 
-export { CONTRACT, comparisons, matchesAllFilters, parseArgs, serialize, supportedRetrieverFilters };
+export { CONTRACT, assertDiskPoolingContract, assertModelModuleContract, assertRuntimeModelContract,
+  comparisons, matchesAllFilters, parseArgs, serialize, supportedRetrieverFilters };
