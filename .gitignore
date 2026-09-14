@@ -11,6 +11,10 @@ exports/
 *.log
 
 .tools/
+# Real-embedding experiments must keep virtual environments, Hugging Face
+# snapshots, and generated vectors in ignored local-only directories.
+.semantic-cache/
+.semantic-venv/
 node_modules/
 web/dist/
 web/.wrangler/

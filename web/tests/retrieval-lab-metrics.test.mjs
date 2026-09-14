@@ -81,3 +81,12 @@ test("metric calculation is repeatable and does not mutate ranked results", () =
   );
   assert.deepEqual(runs, snapshot);
 });
+
+test("document metrics do not count multiple chunks from one document twice", () => {
+  const metrics = calculateRetrievalMetrics(
+    [{ expectedDocumentIds: ["a"], shouldAbstain: false }],
+    [{ results: [{ documentId: "a" }, { documentId: "a" }, { documentId: "b" }], latencyMs: 1 }],
+  );
+  assert.equal(metrics.ndcgAt3, 1);
+  assert.equal(metrics.precisionAt3, 1 / 3);
+});
