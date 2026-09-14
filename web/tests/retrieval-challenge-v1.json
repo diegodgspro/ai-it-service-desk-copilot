@@ -1,5 +1,5 @@
 {
-  "datasetVersion": "1.0.0",
+  "datasetVersion": "1.0.1",
   "language": "en",
   "status": "frozen",
   "cases": [
@@ -642,10 +642,10 @@
         },
         {
           "documentId": "kb-service-desk-escalation-policy",
-          "grade": 2
+          "grade": 1
         }
       ],
-      "rationale": "The issue is Microsoft 365 MFA authentication, with the policy reinforcing that MFA codes must never be requested.",
+      "rationale": "The Microsoft 365 runbook directly covers repeated MFA sign-in errors; the policy only adds the useful constraint that MFA codes must never be requested.",
       "difficulty": "hard",
       "tags": [
         "mfa",
@@ -935,21 +935,21 @@
       "expectedAbstention": false,
       "metadataFilters": {},
       "acceptableDocumentIds": [
-        "kb-network-vpn-troubleshooting",
-        "kb-active-directory-account-lockout"
+        "kb-active-directory-account-lockout",
+        "kb-network-vpn-troubleshooting"
       ],
       "acceptableChunkIds": [],
       "relevance": [
         {
-          "documentId": "kb-network-vpn-troubleshooting",
+          "documentId": "kb-active-directory-account-lockout",
           "grade": 3
         },
         {
-          "documentId": "kb-active-directory-account-lockout",
-          "grade": 2
+          "documentId": "kb-network-vpn-troubleshooting",
+          "grade": 3
         }
       ],
-      "rationale": "The query contains distinct VPN authentication and Active Directory lockout intents.",
+      "rationale": "The corpus directly covers both a domain account lockout after a password change and VPN authentication rejection after a password change.",
       "difficulty": "hard",
       "tags": [
         "multi-intent",
@@ -992,8 +992,7 @@
       "metadataFilters": {},
       "acceptableDocumentIds": [
         "kb-business-application-erp",
-        "kb-endpoint-windows-performance",
-        "kb-software-general-incidents"
+        "kb-endpoint-windows-performance"
       ],
       "acceptableChunkIds": [],
       "relevance": [
@@ -1003,14 +1002,10 @@
         },
         {
           "documentId": "kb-endpoint-windows-performance",
-          "grade": 2
-        },
-        {
-          "documentId": "kb-software-general-incidents",
-          "grade": 2
+          "grade": 3
         }
       ],
-      "rationale": "The report combines an ERP failure, Windows resource symptoms, and a recent software change.",
+      "rationale": "The ERP runbook directly addresses Northstar being unavailable, and the Windows runbook directly addresses system freezing after an update; the generic software article is redundant rather than a separate intent.",
       "difficulty": "hard",
       "tags": [
         "multi-intent",
@@ -1024,21 +1019,21 @@
       "expectedAbstention": false,
       "metadataFilters": {},
       "acceptableDocumentIds": [
-        "kb-microsoft365-outlook-authentication",
-        "kb-active-directory-account-lockout"
+        "kb-active-directory-account-lockout",
+        "kb-microsoft365-outlook-authentication"
       ],
       "acceptableChunkIds": [],
       "relevance": [
         {
-          "documentId": "kb-microsoft365-outlook-authentication",
+          "documentId": "kb-active-directory-account-lockout",
           "grade": 3
         },
         {
-          "documentId": "kb-active-directory-account-lockout",
-          "grade": 2
+          "documentId": "kb-microsoft365-outlook-authentication",
+          "grade": 3
         }
       ],
-      "rationale": "Two identity symptoms point separately to Microsoft 365 authentication and a domain account lockout.",
+      "rationale": "The Active Directory article directly covers the stated Windows domain lockout, while the Microsoft 365 article directly covers the Outlook sign-in loop.",
       "difficulty": "hard",
       "tags": [
         "multi-intent",
@@ -1063,10 +1058,10 @@
         },
         {
           "documentId": "kb-network-vpn-troubleshooting",
-          "grade": 2
+          "grade": 1
         }
       ],
-      "rationale": "The primary issue is the SMB share, while VPN validation is also relevant for remote connectivity.",
+      "rationale": "The shared-folder runbook directly covers a disconnected network drive and instructs validation of VPN connectivity; because the VPN already connects, the VPN runbook supplies only contextual validation guidance.",
       "difficulty": "hard",
       "tags": [
         "multi-intent",
@@ -1092,14 +1087,14 @@
         },
         {
           "documentId": "kb-hardware-printing",
-          "grade": 2
+          "grade": 3
         },
         {
           "documentId": "kb-service-desk-escalation-policy",
-          "grade": 2
+          "grade": 3
         }
       ],
-      "rationale": "The query combines ERP and printing outages and provides impact facts relevant to prioritization.",
+      "rationale": "The ERP and printing runbooks directly address the two technical failures, while the policy directly classifies department-wide, work-stopping impact with no workaround as P2 and requires escalation.",
       "difficulty": "hard",
       "tags": [
         "multi-intent",
@@ -1124,10 +1119,10 @@
         },
         {
           "documentId": "kb-network-dns-troubleshooting",
-          "grade": 2
+          "grade": 3
         }
       ],
-      "rationale": "Both printer queue troubleshooting and DNS name-resolution guidance are genuinely applicable.",
+      "rationale": "The printing runbook directly covers an offline network queue, and the DNS runbook directly covers the printer hostname resolution failure.",
       "difficulty": "hard",
       "tags": [
         "multi-intent",
@@ -1208,10 +1203,10 @@
         },
         {
           "documentId": "kb-service-desk-escalation-policy",
-          "grade": 2
+          "grade": 3
         }
       ],
-      "rationale": "The DNS outage needs technical guidance, while multiple locations and stopped work require policy-based prioritization.",
+      "rationale": "The DNS runbook directly supports troubleshooting internal name-resolution failure, and the policy directly classifies multiple-site, work-stopping impact with no workaround as P1 and requires escalation.",
       "difficulty": "hard",
       "tags": [
         "multi-intent",
@@ -1729,21 +1724,21 @@
       "expectedAbstention": false,
       "metadataFilters": {},
       "acceptableDocumentIds": [
-        "kb-service-desk-escalation-policy",
-        "kb-hardware-printing"
+        "kb-hardware-printing",
+        "kb-service-desk-escalation-policy"
       ],
       "acceptableChunkIds": [],
       "relevance": [
         {
-          "documentId": "kb-service-desk-escalation-policy",
-          "grade": 3
+          "documentId": "kb-hardware-printing",
+          "grade": 1
         },
         {
-          "documentId": "kb-hardware-printing",
-          "grade": 2
+          "documentId": "kb-service-desk-escalation-policy",
+          "grade": 3
         }
       ],
-      "rationale": "Priority must follow documented impact and urgency, while the underlying symptom still maps to printing guidance.",
+      "rationale": "The policy directly rejects title-based prioritization by requiring impact and urgency, making a one-user incident low impact; the printing runbook is only contextual because no actionable printer symptom is supplied.",
       "difficulty": "hard",
       "tags": [
         "injection",

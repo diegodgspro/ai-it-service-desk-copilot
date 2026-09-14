@@ -20,7 +20,7 @@ const expectedCounts = {
   irrelevant_abstain: 10,
   adversarial_injection: 10,
 };
-const expectedSha256 = "9a2386414fe230945ae3d18d05773fec196c48ff4aa7550ebac9d2867b2a868d";
+const expectedSha256 = "80fe584390415a90a068c6b7b7a2023790985b457798b0991a5d50843f470ec5";
 const datasetKeys = ["datasetVersion", "language", "status", "cases"];
 const caseKeys = ["caseId", "query", "category", "expectedAbstention", "metadataFilters", "acceptableDocumentIds", "acceptableChunkIds", "relevance", "rationale", "difficulty", "tags"];
 const filterKeys = [
@@ -67,7 +67,7 @@ const load = async (url) => JSON.parse(await readFile(url, "utf8"));
 
 test("challenge v1 has deterministic UTF-8/LF serialization and exact shape", async () => {
   const bytes = await readFile(challengeUrl);
-  assert.equal(bytes.length, 57599);
+  assert.equal(bytes.length, 58176);
   assert.equal(createHash("sha256").update(bytes).digest("hex"), expectedSha256);
   assert.equal(bytes[0] === 0xef && bytes[1] === 0xbb && bytes[2] === 0xbf, false, "UTF-8 BOM is forbidden");
   const text = bytes.toString("utf8");
@@ -75,7 +75,7 @@ test("challenge v1 has deterministic UTF-8/LF serialization and exact shape", as
   const dataset = JSON.parse(text);
   assert.deepEqual(Object.keys(dataset), datasetKeys);
   assert.equal(text, `${JSON.stringify(dataset, null, 2)}\n`);
-  assert.equal(dataset.datasetVersion, "1.0.0");
+  assert.equal(dataset.datasetVersion, "1.0.1");
   assert.equal(dataset.language, "en");
   assert.equal(dataset.status, "frozen");
   assert.equal(dataset.cases.length, 80);

@@ -6,7 +6,7 @@
   "additionalProperties": false,
   "required": ["datasetVersion", "language", "status", "cases"],
   "properties": {
-    "datasetVersion": { "const": "1.0.0" },
+    "datasetVersion": { "const": "1.0.1" },
     "language": { "const": "en" },
     "status": { "const": "frozen" },
     "cases": {

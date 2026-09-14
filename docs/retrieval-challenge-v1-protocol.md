@@ -46,14 +46,19 @@ After independent authoring and review, the canonical JSON is serialized as UTF-
 Freeze record:
 
 - dataset: `web/tests/retrieval-challenge-v1.json`
-- version: `1.0.0`
-- status: frozen on 2026-09-13 after independent authoring and structural/safety review
-- canonical byte length: 57,599
-- SHA-256: `9a2386414fe230945ae3d18d05773fec196c48ff4aa7550ebac9d2867b2a868d`
+- version: `1.0.1`
+- status: frozen on 2026-09-13 after independent authoring, second blind annotation, and corpus-only adjudication
+- canonical byte length: 58,176
+- SHA-256: `80fe584390415a90a068c6b7b7a2023790985b457798b0991a5d50843f470ec5`
 - cases: 80
 - distribution: 16 paraphrase/synonym; 12 noisy, misspelled, or non-native English; 12 terse ticket; 10 ambiguous/multi-intent; 10 metadata-filter; 10 irrelevant/abstention; 10 adversarial/prompt-injection
 
 The author used a fresh agent with no inherited conversation history. Its inputs were restricted to the ten `knowledge_base/*.md` files, the preregistered schema, and the synthetic/safety requirements. It was prohibited from reading prior evaluation data, retrieval implementations, thresholds, fusion configuration, outputs, metrics, or model/cache content. Corrections after structural review were limited to removing one invalid metadata value and making required adversarial families explicit; neither used retrieval behavior.
+
+Version history:
+
+- `1.0.0`: 57,599 bytes, SHA-256 `9a2386414fe230945ae3d18d05773fec196c48ff4aa7550ebac9d2867b2a868d`; initial independently authored freeze.
+- `1.0.1`: second blind annotation and separate corpus-only adjudication changed labels/rationales in nine cases without changing queries, categories, filters, or abstention decisions. Direct comparison with results produced from `1.0.0` is invalid.
 
 ## Difficulty-only lexical overlap analysis
 
