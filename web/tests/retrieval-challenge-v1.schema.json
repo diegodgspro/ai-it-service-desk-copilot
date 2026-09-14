@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://deskpilot.invalid/schemas/retrieval-challenge-v1.schema.json",
+  "title": "DeskPilot Independent Retrieval Challenge v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["datasetVersion", "language", "status", "cases"],
+  "properties": {
+    "datasetVersion": { "const": "1.0.1" },
+    "language": { "const": "en" },
+    "status": { "const": "frozen" },
+    "cases": {
+      "type": "array",
+      "minItems": 80,
+      "maxItems": 80,
+      "items": { "$ref": "#/$defs/case" }
+    }
+  },
+  "$defs": {
+    "case": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["caseId", "query", "category", "expectedAbstention", "metadataFilters", "acceptableDocumentIds", "acceptableChunkIds", "relevance", "rationale", "difficulty", "tags"],
+      "properties": {
+        "caseId": { "type": "string", "pattern": "^irc-v1-[0-9]{3}$" },
+        "query": { "type": "string", "minLength": 8, "maxLength": 500 },
+        "category": { "enum": ["paraphrase_synonym", "noisy_non_native", "terse_ticket", "ambiguous_multi_intent", "metadata_filter", "irrelevant_abstain", "adversarial_injection"] },
+        "expectedAbstention": { "type": "boolean" },
+        "metadataFilters": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "service": { "type": "string", "minLength": 1 },
+            "category": { "type": "string", "minLength": 1 },
+            "product": { "type": "string", "minLength": 1 },
+            "operatingSystem": { "type": "string", "minLength": 1 },
+            "language": { "type": "string", "minLength": 1 },
+            "sourceType": { "type": "string", "minLength": 1 },
+            "approvalStatus": { "type": "string", "minLength": 1 }
+          }
+        },
+        "acceptableDocumentIds": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+        "acceptableChunkIds": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+        "relevance": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["documentId", "grade"],
+            "properties": {
+              "documentId": { "type": "string", "minLength": 1 },
+              "chunkId": { "type": "string", "minLength": 1 },
+              "grade": { "type": "integer", "minimum": 1, "maximum": 3 }
+            }
+          }
+        },
+        "rationale": { "type": "string", "minLength": 12, "maxLength": 500 },
+        "difficulty": { "enum": ["easy", "medium", "hard"] },
+        "tags": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" } }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "category": { "const": "metadata_filter" } }, "required": ["category"] },
+          "then": { "properties": { "metadataFilters": { "minProperties": 1 } } },
+          "else": { "properties": { "metadataFilters": { "maxProperties": 0 } } }
+        }
+      ]
+    }
+  }
+}
