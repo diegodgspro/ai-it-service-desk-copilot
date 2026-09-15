@@ -115,6 +115,14 @@ Local warm CPU latency is non-production.
 
 Paraphrase/synonym hybrid R@3 changed by 0.000; top-3 error reduction was 0.000. Policy gate: pass. Abstention non-regression gate: fail.
 
+This is a valid negative result: under the frozen challenge contract, canonical
+D1 FTS5 lexical retrieval outperformed both instructed BGE semantic retrieval
+and the frozen hybrid configuration on the overall metrics. The preregistered
+promotion gate therefore failed, and production should remain on D1 FTS5. No
+post-challenge tuning, threshold selection, fusion adjustment, or derived
+configuration may use challenge v1 results; any later experiment requires a new
+independent challenge and preregistration.
+
 ## Limitations
 
-The challenge is synthetic, English-only, small, and grounded in ten compact portfolio documents. Document metrics collapse each method's frozen ten-chunk output before evaluation top-K, so a document below that candidate cap is unobserved. Document-level judgments do not establish chunk-level relevance. Exact operating-system and source-type filters are enforced by an evaluation adapter because those fields are outside the production query type. Local CPU latency is not a production benchmark. Passing cannot establish production quality, downstream generation safety, or deployment readiness.
+The challenge is synthetic, English-only, small, and grounded in ten compact portfolio documents. Its result does not establish universal lexical superiority over semantic or hybrid retrieval. Document metrics collapse each method's frozen ten-chunk output before evaluation top-K, so a document below that candidate cap is unobserved. Document-level judgments do not establish chunk-level relevance. Exact operating-system and source-type filters are enforced by an evaluation adapter because those fields are outside the production query type. Local CPU latency is not a production benchmark. Passing cannot establish production quality, downstream generation safety, or deployment readiness.
