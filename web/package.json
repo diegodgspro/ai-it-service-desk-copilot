@@ -19,7 +19,8 @@
     "dev": "npm run build && npm run db:migrate && npm run knowledge:ingest:local && wrangler dev --local --ip 127.0.0.1 --port 8787 --var APP_ENV:local --var LOCAL_DEV_IDENTITY:enabled",
     "test:browser": "playwright test",
     "test:browser:prepare": "node scripts/prepare-browser.mjs",
-    "test:browser:server": "npm run test:browser:prepare && npm run build:browser && wrangler d1 migrations apply DB --local --persist-to .test-build/browser-state && wrangler d1 execute DB --local --persist-to .test-build/browser-state --file knowledge-seed.sql && wrangler dev --local --assets .test-build/browser-dist --ip 127.0.0.1 --port 8787 --persist-to .test-build/browser-state --var APP_ENV:local --var LOCAL_DEV_IDENTITY:enabled",
+    "test:browser:server": "node scripts/run-browser-server.mjs",
+    "test:browser:server:unlocked": "npm run test:browser:prepare && npm run build:browser && wrangler d1 migrations apply DB --local --env-file browser/fixtures/wrangler-test.vars --persist-to .test-build/browser-state && wrangler d1 execute DB --local --env-file browser/fixtures/wrangler-test.vars --persist-to .test-build/browser-state --file knowledge-seed.sql && wrangler dev --local --env-file browser/fixtures/wrangler-test.vars --assets .test-build/browser-dist --ip 127.0.0.1 --port 8787 --persist-to .test-build/browser-state --var APP_ENV:local --var LOCAL_DEV_IDENTITY:enabled",
     "test:frontend": "vitest run",
     "dev:auth0": "npm run build && npm run db:migrate && npm run knowledge:ingest:local && wrangler dev --local --ip 127.0.0.1 --port 8787 --var APP_ENV:local --var LOCAL_DEV_IDENTITY:disabled"
   },
