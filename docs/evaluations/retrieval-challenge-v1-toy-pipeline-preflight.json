@@ -1,0 +1,697 @@
+{
+  "bootstrap": {
+    "hybrid": {
+      "ndcgAt3": {
+        "confidence": 0.95,
+        "difference": 0,
+        "lower": 0,
+        "resamples": 10000,
+        "seed": 20260914,
+        "upper": 0
+      },
+      "precisionAt3": {
+        "confidence": 0.95,
+        "difference": 0,
+        "lower": 0,
+        "resamples": 10000,
+        "seed": 20260914,
+        "upper": 0
+      },
+      "recallAt1": {
+        "confidence": 0.95,
+        "difference": 0,
+        "lower": 0,
+        "resamples": 10000,
+        "seed": 20260914,
+        "upper": 0
+      },
+      "recallAt3": {
+        "confidence": 0.95,
+        "difference": 0,
+        "lower": 0,
+        "resamples": 10000,
+        "seed": 20260914,
+        "upper": 0
+      },
+      "recallAt5": {
+        "confidence": 0.95,
+        "difference": 0,
+        "lower": 0,
+        "resamples": 10000,
+        "seed": 20260914,
+        "upper": 0
+      },
+      "reciprocalRank": {
+        "confidence": 0.95,
+        "difference": 0,
+        "lower": 0,
+        "resamples": 10000,
+        "seed": 20260914,
+        "upper": 0
+      }
+    },
+    "semantic": {
+      "ndcgAt3": {
+        "confidence": 0.95,
+        "difference": 0,
+        "lower": 0,
+        "resamples": 10000,
+        "seed": 20260914,
+        "upper": 0
+      },
+      "precisionAt3": {
+        "confidence": 0.95,
+        "difference": 0,
+        "lower": 0,
+        "resamples": 10000,
+        "seed": 20260914,
+        "upper": 0
+      },
+      "recallAt1": {
+        "confidence": 0.95,
+        "difference": 0,
+        "lower": 0,
+        "resamples": 10000,
+        "seed": 20260914,
+        "upper": 0
+      },
+      "recallAt3": {
+        "confidence": 0.95,
+        "difference": 0,
+        "lower": 0,
+        "resamples": 10000,
+        "seed": 20260914,
+        "upper": 0
+      },
+      "recallAt5": {
+        "confidence": 0.95,
+        "difference": 0,
+        "lower": 0,
+        "resamples": 10000,
+        "seed": 20260914,
+        "upper": 0
+      },
+      "reciprocalRank": {
+        "confidence": 0.95,
+        "difference": 0,
+        "lower": 0,
+        "resamples": 10000,
+        "seed": 20260914,
+        "upper": 0
+      }
+    }
+  },
+  "challengeContentAccessed": false,
+  "checks": {
+    "byteStableArtifacts": true,
+    "deterministicRepeatedOutput": true,
+    "duplicateDocumentIdentities": 0,
+    "exactD1PayloadSchema": true,
+    "independentMetricRecalculation": true,
+    "invalidCitations": 0,
+    "sanitizedPathsAndMetadata": true,
+    "semanticTimeoutFallback": true
+  },
+  "contract": {
+    "bootstrap": {
+      "confidence": 0.95,
+      "resamples": 10000,
+      "seed": 20260914
+    },
+    "lexicalMinScore": 0.5,
+    "minFusedScore": 0.016393443,
+    "normalization": "L2",
+    "pooling": "CLS",
+    "queryInstruction": "Represent this sentence for searching relevant passages: ",
+    "rrfK": 60,
+    "semanticThreshold": 0.5
+  },
+  "metrics": {
+    "hybrid": {
+      "byCategory": {
+        "toy_abstention": {
+          "abstention": {
+            "f1": 1,
+            "falseNegative": 0,
+            "falsePositive": 0,
+            "precision": 1,
+            "recall": 1,
+            "trueNegative": 0,
+            "truePositive": 1
+          },
+          "approvedOnlyCorrectness": 1,
+          "cases": 1,
+          "duplicateDocumentIdentityCount": 0,
+          "invalidCitationCount": 0,
+          "meanReciprocalRank": 0,
+          "metadataFilterCorrectness": 0,
+          "ndcgAt3": 0,
+          "precisionAt3": 0,
+          "recallAt1": 0,
+          "recallAt3": 0,
+          "recallAt5": 0,
+          "retrievalCases": 0
+        },
+        "toy_retrieval": {
+          "abstention": {
+            "f1": 0,
+            "falseNegative": 0,
+            "falsePositive": 0,
+            "precision": 0,
+            "recall": 0,
+            "trueNegative": 2,
+            "truePositive": 0
+          },
+          "approvedOnlyCorrectness": 1,
+          "cases": 2,
+          "duplicateDocumentIdentityCount": 0,
+          "invalidCitationCount": 0,
+          "meanReciprocalRank": 1,
+          "metadataFilterCorrectness": 1,
+          "ndcgAt3": 1,
+          "precisionAt3": 0.333333333,
+          "recallAt1": 1,
+          "recallAt3": 1,
+          "recallAt5": 1,
+          "retrievalCases": 2
+        }
+      },
+      "overall": {
+        "abstention": {
+          "f1": 1,
+          "falseNegative": 0,
+          "falsePositive": 0,
+          "precision": 1,
+          "recall": 1,
+          "trueNegative": 2,
+          "truePositive": 1
+        },
+        "approvedOnlyCorrectness": 1,
+        "cases": 3,
+        "duplicateDocumentIdentityCount": 0,
+        "invalidCitationCount": 0,
+        "meanReciprocalRank": 1,
+        "metadataFilterCorrectness": 1,
+        "ndcgAt3": 1,
+        "precisionAt3": 0.333333333,
+        "recallAt1": 1,
+        "recallAt3": 1,
+        "recallAt5": 1,
+        "retrievalCases": 2
+      },
+      "perCase": [
+        {
+          "applicableToRetrieval": true,
+          "approvedOnlyCorrect": true,
+          "caseId": "toy-001",
+          "category": "toy_retrieval",
+          "duplicateDocumentIdentityCount": 0,
+          "expectedAbstention": false,
+          "invalidCitationCount": 0,
+          "metadataFilterApplicable": true,
+          "metadataFilterCorrect": true,
+          "ndcgAt3": 1,
+          "precisionAt3": 0.333333333,
+          "predictedAbstention": false,
+          "recallAt1": 1,
+          "recallAt3": 1,
+          "recallAt5": 1,
+          "reciprocalRank": 1
+        },
+        {
+          "applicableToRetrieval": true,
+          "approvedOnlyCorrect": true,
+          "caseId": "toy-002",
+          "category": "toy_retrieval",
+          "duplicateDocumentIdentityCount": 0,
+          "expectedAbstention": false,
+          "invalidCitationCount": 0,
+          "metadataFilterApplicable": true,
+          "metadataFilterCorrect": true,
+          "ndcgAt3": 1,
+          "precisionAt3": 0.333333333,
+          "predictedAbstention": false,
+          "recallAt1": 1,
+          "recallAt3": 1,
+          "recallAt5": 1,
+          "reciprocalRank": 1
+        },
+        {
+          "applicableToRetrieval": false,
+          "approvedOnlyCorrect": true,
+          "caseId": "toy-003",
+          "category": "toy_abstention",
+          "duplicateDocumentIdentityCount": 0,
+          "expectedAbstention": true,
+          "invalidCitationCount": 0,
+          "metadataFilterApplicable": false,
+          "metadataFilterCorrect": true,
+          "ndcgAt3": 0,
+          "precisionAt3": 0,
+          "predictedAbstention": true,
+          "recallAt1": 0,
+          "recallAt3": 0,
+          "recallAt5": 0,
+          "reciprocalRank": 0
+        }
+      ]
+    },
+    "lexical": {
+      "byCategory": {
+        "toy_abstention": {
+          "abstention": {
+            "f1": 1,
+            "falseNegative": 0,
+            "falsePositive": 0,
+            "precision": 1,
+            "recall": 1,
+            "trueNegative": 0,
+            "truePositive": 1
+          },
+          "approvedOnlyCorrectness": 1,
+          "cases": 1,
+          "duplicateDocumentIdentityCount": 0,
+          "invalidCitationCount": 0,
+          "meanReciprocalRank": 0,
+          "metadataFilterCorrectness": 0,
+          "ndcgAt3": 0,
+          "precisionAt3": 0,
+          "recallAt1": 0,
+          "recallAt3": 0,
+          "recallAt5": 0,
+          "retrievalCases": 0
+        },
+        "toy_retrieval": {
+          "abstention": {
+            "f1": 0,
+            "falseNegative": 0,
+            "falsePositive": 0,
+            "precision": 0,
+            "recall": 0,
+            "trueNegative": 2,
+            "truePositive": 0
+          },
+          "approvedOnlyCorrectness": 1,
+          "cases": 2,
+          "duplicateDocumentIdentityCount": 0,
+          "invalidCitationCount": 0,
+          "meanReciprocalRank": 1,
+          "metadataFilterCorrectness": 1,
+          "ndcgAt3": 1,
+          "precisionAt3": 0.333333333,
+          "recallAt1": 1,
+          "recallAt3": 1,
+          "recallAt5": 1,
+          "retrievalCases": 2
+        }
+      },
+      "overall": {
+        "abstention": {
+          "f1": 1,
+          "falseNegative": 0,
+          "falsePositive": 0,
+          "precision": 1,
+          "recall": 1,
+          "trueNegative": 2,
+          "truePositive": 1
+        },
+        "approvedOnlyCorrectness": 1,
+        "cases": 3,
+        "duplicateDocumentIdentityCount": 0,
+        "invalidCitationCount": 0,
+        "meanReciprocalRank": 1,
+        "metadataFilterCorrectness": 1,
+        "ndcgAt3": 1,
+        "precisionAt3": 0.333333333,
+        "recallAt1": 1,
+        "recallAt3": 1,
+        "recallAt5": 1,
+        "retrievalCases": 2
+      },
+      "perCase": [
+        {
+          "applicableToRetrieval": true,
+          "approvedOnlyCorrect": true,
+          "caseId": "toy-001",
+          "category": "toy_retrieval",
+          "duplicateDocumentIdentityCount": 0,
+          "expectedAbstention": false,
+          "invalidCitationCount": 0,
+          "metadataFilterApplicable": true,
+          "metadataFilterCorrect": true,
+          "ndcgAt3": 1,
+          "precisionAt3": 0.333333333,
+          "predictedAbstention": false,
+          "recallAt1": 1,
+          "recallAt3": 1,
+          "recallAt5": 1,
+          "reciprocalRank": 1
+        },
+        {
+          "applicableToRetrieval": true,
+          "approvedOnlyCorrect": true,
+          "caseId": "toy-002",
+          "category": "toy_retrieval",
+          "duplicateDocumentIdentityCount": 0,
+          "expectedAbstention": false,
+          "invalidCitationCount": 0,
+          "metadataFilterApplicable": true,
+          "metadataFilterCorrect": true,
+          "ndcgAt3": 1,
+          "precisionAt3": 0.333333333,
+          "predictedAbstention": false,
+          "recallAt1": 1,
+          "recallAt3": 1,
+          "recallAt5": 1,
+          "reciprocalRank": 1
+        },
+        {
+          "applicableToRetrieval": false,
+          "approvedOnlyCorrect": true,
+          "caseId": "toy-003",
+          "category": "toy_abstention",
+          "duplicateDocumentIdentityCount": 0,
+          "expectedAbstention": true,
+          "invalidCitationCount": 0,
+          "metadataFilterApplicable": false,
+          "metadataFilterCorrect": true,
+          "ndcgAt3": 0,
+          "precisionAt3": 0,
+          "predictedAbstention": true,
+          "recallAt1": 0,
+          "recallAt3": 0,
+          "recallAt5": 0,
+          "reciprocalRank": 0
+        }
+      ]
+    },
+    "semantic": {
+      "byCategory": {
+        "toy_abstention": {
+          "abstention": {
+            "f1": 1,
+            "falseNegative": 0,
+            "falsePositive": 0,
+            "precision": 1,
+            "recall": 1,
+            "trueNegative": 0,
+            "truePositive": 1
+          },
+          "approvedOnlyCorrectness": 1,
+          "cases": 1,
+          "duplicateDocumentIdentityCount": 0,
+          "invalidCitationCount": 0,
+          "meanReciprocalRank": 0,
+          "metadataFilterCorrectness": 0,
+          "ndcgAt3": 0,
+          "precisionAt3": 0,
+          "recallAt1": 0,
+          "recallAt3": 0,
+          "recallAt5": 0,
+          "retrievalCases": 0
+        },
+        "toy_retrieval": {
+          "abstention": {
+            "f1": 0,
+            "falseNegative": 0,
+            "falsePositive": 0,
+            "precision": 0,
+            "recall": 0,
+            "trueNegative": 2,
+            "truePositive": 0
+          },
+          "approvedOnlyCorrectness": 1,
+          "cases": 2,
+          "duplicateDocumentIdentityCount": 0,
+          "invalidCitationCount": 0,
+          "meanReciprocalRank": 1,
+          "metadataFilterCorrectness": 1,
+          "ndcgAt3": 1,
+          "precisionAt3": 0.333333333,
+          "recallAt1": 1,
+          "recallAt3": 1,
+          "recallAt5": 1,
+          "retrievalCases": 2
+        }
+      },
+      "overall": {
+        "abstention": {
+          "f1": 1,
+          "falseNegative": 0,
+          "falsePositive": 0,
+          "precision": 1,
+          "recall": 1,
+          "trueNegative": 2,
+          "truePositive": 1
+        },
+        "approvedOnlyCorrectness": 1,
+        "cases": 3,
+        "duplicateDocumentIdentityCount": 0,
+        "invalidCitationCount": 0,
+        "meanReciprocalRank": 1,
+        "metadataFilterCorrectness": 1,
+        "ndcgAt3": 1,
+        "precisionAt3": 0.333333333,
+        "recallAt1": 1,
+        "recallAt3": 1,
+        "recallAt5": 1,
+        "retrievalCases": 2
+      },
+      "perCase": [
+        {
+          "applicableToRetrieval": true,
+          "approvedOnlyCorrect": true,
+          "caseId": "toy-001",
+          "category": "toy_retrieval",
+          "duplicateDocumentIdentityCount": 0,
+          "expectedAbstention": false,
+          "invalidCitationCount": 0,
+          "metadataFilterApplicable": true,
+          "metadataFilterCorrect": true,
+          "ndcgAt3": 1,
+          "precisionAt3": 0.333333333,
+          "predictedAbstention": false,
+          "recallAt1": 1,
+          "recallAt3": 1,
+          "recallAt5": 1,
+          "reciprocalRank": 1
+        },
+        {
+          "applicableToRetrieval": true,
+          "approvedOnlyCorrect": true,
+          "caseId": "toy-002",
+          "category": "toy_retrieval",
+          "duplicateDocumentIdentityCount": 0,
+          "expectedAbstention": false,
+          "invalidCitationCount": 0,
+          "metadataFilterApplicable": true,
+          "metadataFilterCorrect": true,
+          "ndcgAt3": 1,
+          "precisionAt3": 0.333333333,
+          "predictedAbstention": false,
+          "recallAt1": 1,
+          "recallAt3": 1,
+          "recallAt5": 1,
+          "reciprocalRank": 1
+        },
+        {
+          "applicableToRetrieval": false,
+          "approvedOnlyCorrect": true,
+          "caseId": "toy-003",
+          "category": "toy_abstention",
+          "duplicateDocumentIdentityCount": 0,
+          "expectedAbstention": true,
+          "invalidCitationCount": 0,
+          "metadataFilterApplicable": false,
+          "metadataFilterCorrect": true,
+          "ndcgAt3": 0,
+          "precisionAt3": 0,
+          "predictedAbstention": true,
+          "recallAt1": 0,
+          "recallAt3": 0,
+          "recallAt5": 0,
+          "reciprocalRank": 0
+        }
+      ]
+    }
+  },
+  "model": {
+    "id": "BAAI/bge-small-en-v1.5",
+    "revision": "5c38ec7c405ec4b44b94cc5a9bb96e735b38267a",
+    "safetensorsSha256": "3c9f31665447c8911517620762200d2245a2518d6e7208acc78cd9db317e21ad"
+  },
+  "runs": {
+    "hybrid": [
+      {
+        "abstained": false,
+        "caseId": "toy-001",
+        "results": [
+          {
+            "chunkId": "toy-lantern-1",
+            "citation": {
+              "chunkId": "toy-lantern-1",
+              "documentId": "toy-kb-lantern",
+              "label": "toy-kb-lantern@1.0#toy-lantern-1"
+            },
+            "documentId": "toy-kb-lantern",
+            "metadata": {
+              "approvalStatus": "approved",
+              "category": "Collections",
+              "language": "en",
+              "product": "Lantern",
+              "service": "Museum",
+              "version": "1.0"
+            },
+            "score": 0.032787
+          }
+        ]
+      },
+      {
+        "abstained": false,
+        "caseId": "toy-002",
+        "results": [
+          {
+            "chunkId": "toy-orchard-1",
+            "citation": {
+              "chunkId": "toy-orchard-1",
+              "documentId": "toy-kb-orchard",
+              "label": "toy-kb-orchard@1.0#toy-orchard-1"
+            },
+            "documentId": "toy-kb-orchard",
+            "metadata": {
+              "approvalStatus": "approved",
+              "category": "Harvest",
+              "language": "en",
+              "product": "Basket",
+              "service": "Orchard",
+              "version": "1.0"
+            },
+            "score": 0.032787
+          }
+        ]
+      },
+      {
+        "abstained": true,
+        "caseId": "toy-003",
+        "results": []
+      }
+    ],
+    "lexical": [
+      {
+        "abstained": false,
+        "caseId": "toy-001",
+        "results": [
+          {
+            "chunkId": "toy-lantern-1",
+            "citation": {
+              "chunkId": "toy-lantern-1",
+              "documentId": "toy-kb-lantern",
+              "label": "toy-kb-lantern@1.0#toy-lantern-1"
+            },
+            "documentId": "toy-kb-lantern",
+            "metadata": {
+              "approvalStatus": "approved",
+              "category": "Collections",
+              "language": "en",
+              "product": "Lantern",
+              "service": "Museum",
+              "version": "1.0"
+            },
+            "score": 1
+          }
+        ]
+      },
+      {
+        "abstained": false,
+        "caseId": "toy-002",
+        "results": [
+          {
+            "chunkId": "toy-orchard-1",
+            "citation": {
+              "chunkId": "toy-orchard-1",
+              "documentId": "toy-kb-orchard",
+              "label": "toy-kb-orchard@1.0#toy-orchard-1"
+            },
+            "documentId": "toy-kb-orchard",
+            "metadata": {
+              "approvalStatus": "approved",
+              "category": "Harvest",
+              "language": "en",
+              "product": "Basket",
+              "service": "Orchard",
+              "version": "1.0"
+            },
+            "score": 1
+          }
+        ]
+      },
+      {
+        "abstained": true,
+        "caseId": "toy-003",
+        "results": []
+      }
+    ],
+    "semantic": [
+      {
+        "abstained": false,
+        "caseId": "toy-001",
+        "results": [
+          {
+            "chunkId": "toy-lantern-1",
+            "citation": {
+              "chunkId": "toy-lantern-1",
+              "documentId": "toy-kb-lantern",
+              "label": "toy-kb-lantern@1.0#toy-lantern-1"
+            },
+            "documentId": "toy-kb-lantern",
+            "metadata": {
+              "approvalStatus": "approved",
+              "category": "Collections",
+              "language": "en",
+              "product": "Lantern",
+              "service": "Museum",
+              "version": "1.0"
+            },
+            "score": 0.805477
+          }
+        ]
+      },
+      {
+        "abstained": false,
+        "caseId": "toy-002",
+        "results": [
+          {
+            "chunkId": "toy-orchard-1",
+            "citation": {
+              "chunkId": "toy-orchard-1",
+              "documentId": "toy-kb-orchard",
+              "label": "toy-kb-orchard@1.0#toy-orchard-1"
+            },
+            "documentId": "toy-kb-orchard",
+            "metadata": {
+              "approvalStatus": "approved",
+              "category": "Harvest",
+              "language": "en",
+              "product": "Basket",
+              "service": "Orchard",
+              "version": "1.0"
+            },
+            "score": 0.819159
+          }
+        ]
+      },
+      {
+        "abstained": true,
+        "caseId": "toy-003",
+        "results": []
+      }
+    ]
+  },
+  "schemaVersion": 1,
+  "status": "passed",
+  "toy": {
+    "cases": 3,
+    "chunks": 3,
+    "documents": 3
+  }
+}

@@ -9,6 +9,7 @@ import { dirname, join, relative, resolve } from "node:path";
 import { performance } from "node:perf_hooks";
 import { BgeLocalProvider } from "./bge-local-provider.mjs";
 import { HybridRetriever, SemanticRetriever } from "./retrieval-lab-core.mjs";
+import { serializeLexicalRequest, serializeSemanticRequest } from "./retrieval-pipeline-boundaries.mjs";
 import {
   calculateChallengeMetrics,
   collapseToDocuments,
@@ -25,6 +26,7 @@ const CONTRACT = Object.freeze({
   pooling: "CLS",
   normalization: "L2",
   semanticThreshold: 0.5,
+  lexicalMinScore: 0.5,
   queryInstruction: "Represent this sentence for searching relevant passages: ",
   rrfK: 60,
   minFusedScore: 1 / 61,
@@ -110,7 +112,7 @@ async function createCanonicalD1(webRoot) {
   await db.exec((await readFile(join(webRoot, "knowledge-seed.sql"), "utf8")).replace(/^--.*$/gm, "").replaceAll("\n", " "));
   return {
     retriever: { async retrieve(input) {
-      const boundedInput = { ...input, topK: Math.min(input.topK ?? 3, 10) };
+      const boundedInput = serializeLexicalRequest(input, { topK: Math.min(input.topK ?? 3, 10) });
       const response = await mf.dispatchFetch(`${origin}/api/knowledge/retrieve`, { method: "POST",
         headers: { "Content-Type": "application/json", Origin: origin }, body: JSON.stringify(boundedInput) });
       if (!response.ok) throw new Error(`canonical D1 request failed: ${response.status}`);
@@ -213,14 +215,21 @@ async function main() {
       minScore: CONTRACT.semanticThreshold, queryTransform: (query) => CONTRACT.queryInstruction + query });
     const hybrid = new HybridRetriever(lexical, semantic, { rrfK: CONTRACT.rrfK, minFusedScore: CONTRACT.minFusedScore });
     const retrievers = { lexical, semantic, hybrid };
-    const warmInput = { query: "general service desk knowledge", filters: {}, minScore: CONTRACT.semanticThreshold, semanticMinScore: CONTRACT.semanticThreshold };
-    for (const method of METHODS) await retrievers[method].retrieve({ ...warmInput, topK: 10 });
+    const warmInput = { query: "general service desk knowledge", filters: {}, topK: 10 };
+    await lexical.retrieve(serializeLexicalRequest({ ...warmInput, minScore: CONTRACT.lexicalMinScore }));
+    await semantic.retrieve(serializeSemanticRequest({ ...warmInput, semanticMinScore: CONTRACT.semanticThreshold }));
+    await hybrid.retrieve({ ...warmInput, minScore: CONTRACT.lexicalMinScore, semanticMinScore: CONTRACT.semanticThreshold });
     for (const method of METHODS) {
       const runs = [];
       for (const item of challenge.cases) {
         primaryStarted = true;
-        const run = await timedRetrieve(retrievers[method], { query: item.query, filters: supportedRetrieverFilters(item.metadataFilters),
-          minScore: CONTRACT.semanticThreshold, semanticMinScore: CONTRACT.semanticThreshold }, item.metadataFilters);
+        const common = { query: item.query, filters: supportedRetrieverFilters(item.metadataFilters), topK: 10 };
+        const request = method === "lexical"
+          ? serializeLexicalRequest({ ...common, minScore: CONTRACT.lexicalMinScore })
+          : method === "semantic"
+            ? serializeSemanticRequest({ ...common, semanticMinScore: CONTRACT.semanticThreshold })
+            : { ...common, minScore: CONTRACT.lexicalMinScore, semanticMinScore: CONTRACT.semanticThreshold };
+        const run = await timedRetrieve(retrievers[method], request, item.metadataFilters);
         runs.push({ caseId: item.caseId, ...run });
         evidence.completedRetrievals++;
       }
