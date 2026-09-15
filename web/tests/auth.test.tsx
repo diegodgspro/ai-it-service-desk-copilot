@@ -1,13 +1,46 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { AuthRoot, AuthenticatedSession, useSession } from "../src/auth";
+import {
+  AuthRoot,
+  AuthenticatedSession,
+  sanitizeOAuthCallbackUrl,
+  useSession,
+} from "../src/auth";
 import { AuthenticationError, createApi, PermissionError } from "../src/api";
 
 const sdk = vi.hoisted(() => ({
   state: {} as Record<string, unknown>,
   provider: vi.fn(),
 }));
+
+it("removes duplicate OAuth parameters while preserving application query and hash", () => {
+  const url = new URL("https://app.invalid/workspace");
+  url.searchParams.append("before", "one");
+  url.searchParams.append("state", "redacted");
+  url.searchParams.append("between", "two");
+  for (const name of [
+    "code",
+    "error",
+    "error_description",
+    "error_uri",
+    "session_state",
+    "iss",
+    "access_token",
+    "id_token",
+    "token_type",
+    "expires_in",
+    "scope",
+  ])
+    url.searchParams.append(name, "redacted");
+  url.searchParams.append("state", "redacted-again");
+  url.searchParams.append("after", "three");
+  url.hash = "#legitimate-section";
+
+  expect(sanitizeOAuthCallbackUrl(url.href)).toBe(
+    "/workspace?before=one&between=two&after=three#legitimate-section",
+  );
+});
 vi.mock("@auth0/auth0-react", () => ({
   useAuth0: () => sdk.state,
   Auth0Provider: (props: { children: React.ReactNode }) => {
@@ -41,6 +74,7 @@ beforeEach(() => {
 });
 afterEach(() => {
   cleanup();
+  window.history.replaceState({}, "", "/");
   vi.unstubAllGlobals();
   vi.unstubAllEnvs();
 });
@@ -199,6 +233,22 @@ describe("Auth0 session UI", () => {
   });
   it("fails closed when frontend configuration is missing", async () => {
     vi.stubEnv("VITE_AUTH0_DOMAIN", "");
+    render(
+      <AuthRoot>
+        <Workspace />
+      </AuthRoot>,
+    );
+    expect((await screen.findByRole("alert")).textContent).toContain(
+      "Sign-in is not configured",
+    );
+    expect(sdk.provider).not.toHaveBeenCalled();
+  });
+  it("rejects the synthetic domain outside compile-time browser mode", async () => {
+    vi.stubEnv("MODE", "production");
+    vi.stubEnv("VITE_AUTH0_DOMAIN", "auth.fixture.invalid");
+    vi.stubEnv("VITE_AUTH0_CLIENT_ID", "synthetic-browser-client");
+    vi.stubEnv("VITE_AUTH0_AUDIENCE", "https://deskpilot-api");
+    window.history.replaceState({}, "", "/?mode=browser#browser");
     render(
       <AuthRoot>
         <Workspace />

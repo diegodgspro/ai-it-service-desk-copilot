@@ -38,20 +38,25 @@ async function mockAuth0(
       expect(url.searchParams.get("state")).toBeTruthy();
       expect(nonce).toBeTruthy();
       expect(challenge).toBeTruthy();
-      const query = new URLSearchParams({
-        state: options.invalidState
-          ? "invalid-synthetic-state"
-          : url.searchParams.get("state")!,
-        ...(options.denied
-          ? {
-              error: "access_denied",
-              error_description: "Synthetic login denial",
-            }
-          : { code: "synthetic-code" }),
-      });
+      const callbackState = options.invalidState
+        ? "invalid-synthetic-state"
+        : url.searchParams.get("state")!;
+      const query = new URLSearchParams();
+      query.append("view", "queue");
+      query.append("state", callbackState);
+      query.append("filter", "open");
+      if (options.denied) {
+        query.append("error", "access_denied");
+        query.append("error_description", "Synthetic login denial");
+        query.append("error_uri", "https://errors.fixture.invalid/denied");
+        query.append("session_state", "synthetic-session-state");
+        query.append("iss", issuer);
+      } else query.append("code", "synthetic-code");
+      query.append("tab", "active");
+      query.append("state", callbackState);
       await route.fulfill({
         status: 302,
-        headers: { location: origin + "/?" + query },
+        headers: { location: origin + "/?" + query + "#workspace" },
       });
     } else if (url.pathname === "/oauth/token") {
       tokenCalls += 1;
@@ -69,11 +74,9 @@ async function mockAuth0(
       expect(tokenBody.get("client_id")).toBe(client);
       expect(tokenBody.get("redirect_uri")).toBe(origin);
       expect(verifier).toBeTruthy();
-      expect(
-        createHash("sha256")
-          .update(verifier!)
-          .digest("base64url"),
-      ).toBe(challenge);
+      expect(createHash("sha256").update(verifier!).digest("base64url")).toBe(
+        challenge,
+      );
       if (options.tokenFailure)
         return route.fulfill({
           status: 400,
@@ -171,16 +174,17 @@ test("anonymous login, PKCE callback, bearer API calls, profile and logout with 
   expect(await page.evaluate(() => JSON.stringify(localStorage))).not.toContain(
     "synthetic-browser-access-token",
   );
-  expect(await page.evaluate(() => JSON.stringify(sessionStorage))).not.toContain(
-    "synthetic-browser-access-token",
-  );
+  expect(
+    await page.evaluate(() => JSON.stringify(sessionStorage)),
+  ).not.toContain("synthetic-browser-access-token");
   expect(
     await page.evaluate(() =>
       Object.keys(sessionStorage).filter((key) => key.includes("a0.spajs.txs")),
     ),
   ).toEqual([]);
   expect(page.url()).not.toContain("synthetic-browser-access-token");
-  expect(new URL(page.url()).search).toBe("");
+  expect(new URL(page.url()).search).toBe("?view=queue&filter=open&tab=active");
+  expect(new URL(page.url()).hash).toBe("#workspace");
   await page.getByRole("button", { name: "Sign out", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "Sign in with Auth0" }),
@@ -214,7 +218,11 @@ for (const scenario of [
     await page.getByRole("button", { name: "Sign in with Auth0" }).click();
     await expect(page.getByRole("alert")).toContainText(scenario.message);
     await expect(page.getByRole("button", { name: /^INC-/ })).toHaveCount(0);
-    await expect(page).toHaveURL((url) => url.search === "");
+    await expect(page).toHaveURL(
+      (url) =>
+        url.search === "?view=queue&filter=open&tab=active" &&
+        url.hash === "#workspace",
+    );
     expect(unexpected).toEqual([]);
     if (scenario.invalidState) {
       expect(tokenCalls()).toBe(0);
