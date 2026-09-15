@@ -1,21 +1,32 @@
 import { test, expect, type Page } from "@playwright/test";
 import { generateKeyPair, SignJWT } from "jose";
+import { createHash } from "node:crypto";
 
 // The real SDK runs against intercepted OAuth endpoints. No tenant is contacted.
 async function mockAuth0(
   page: Page,
   options: {
     denied?: boolean;
+    invalidState?: boolean;
     tokenFailure?: boolean;
     apiStatus?: number;
   } = {},
 ) {
   const origin = "http://127.0.0.1:8787";
-  const issuer = "https://fixture.us.auth0.com/";
+  const issuer = "https://auth.fixture.invalid/";
   const client = "synthetic-browser-client";
   const { privateKey } = await generateKeyPair("RS256");
   let nonce = "";
   const seen: string[] = [];
+  const unexpected: string[] = [];
+  let challenge = "";
+  let tokenCalls = 0;
+  await page.route("**/*", (route) => {
+    const url = new URL(route.request().url());
+    if (url.origin === origin) return route.continue();
+    unexpected.push("external-request");
+    throw new Error("Unexpected external request was not intercepted");
+  });
   const queue = await (await page.request.get("/api/tickets")).json();
   const detail = await (await page.request.get("/api/tickets/INC-1042")).json();
   await page.route("**/auth/local", (route) =>
@@ -28,8 +39,14 @@ async function mockAuth0(
       expect(url.searchParams.get("redirect_uri")).toBe(origin);
       expect(url.searchParams.get("code_challenge_method")).toBe("S256");
       nonce = url.searchParams.get("nonce")!;
+      challenge = url.searchParams.get("code_challenge")!;
+      expect(url.searchParams.get("state")).toBeTruthy();
+      expect(nonce).toBeTruthy();
+      expect(challenge).toBeTruthy();
       const query = new URLSearchParams({
-        state: url.searchParams.get("state")!,
+        state: options.invalidState
+          ? "invalid-synthetic-state"
+          : url.searchParams.get("state")!,
         ...(options.denied
           ? {
               error: "access_denied",
@@ -42,6 +59,7 @@ async function mockAuth0(
         headers: { location: origin + "/?" + query },
       });
     } else if (url.pathname === "/oauth/token") {
+      tokenCalls += 1;
       const headers = {
         "Access-Control-Allow-Origin": origin,
         "Access-Control-Allow-Headers": "Content-Type, Auth0-Client",
@@ -49,6 +67,18 @@ async function mockAuth0(
       };
       if (route.request().method() === "OPTIONS")
         return route.fulfill({ headers });
+      const tokenBody = new URLSearchParams(route.request().postData() || "");
+      const verifier = tokenBody.get("code_verifier");
+      expect(tokenBody.get("grant_type")).toBe("authorization_code");
+      expect(tokenBody.get("code")).toBe("synthetic-code");
+      expect(tokenBody.get("client_id")).toBe(client);
+      expect(tokenBody.get("redirect_uri")).toBe(origin);
+      expect(verifier).toBeTruthy();
+      expect(
+        createHash("sha256")
+          .update(verifier!)
+          .digest("base64url"),
+      ).toBe(challenge);
       if (options.tokenFailure)
         return route.fulfill({
           status: 400,
@@ -103,7 +133,7 @@ async function mockAuth0(
           : detail,
     });
   });
-  return seen;
+  return { seen, unexpected, tokenCalls: () => tokenCalls };
 }
 
 test("anonymous login, PKCE callback, bearer API calls, profile and logout with mocked Auth0", async ({
@@ -111,7 +141,7 @@ test("anonymous login, PKCE callback, bearer API calls, profile and logout with 
 }) => {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
-  const seen = await mockAuth0(page);
+  const { seen, unexpected } = await mockAuth0(page);
   await page.goto("/");
   await expect(
     page.getByRole("heading", { name: "Welcome to DeskPilot" }),
@@ -146,15 +176,27 @@ test("anonymous login, PKCE callback, bearer API calls, profile and logout with 
   expect(await page.evaluate(() => JSON.stringify(localStorage))).not.toContain(
     "synthetic-browser-access-token",
   );
+  expect(await page.evaluate(() => JSON.stringify(sessionStorage))).not.toContain(
+    "synthetic-browser-access-token",
+  );
+  expect(
+    await page.evaluate(() =>
+      Object.keys(sessionStorage).filter((key) => key.includes("a0.spajs.txs")),
+    ),
+  ).toEqual([]);
+  expect(page.url()).not.toContain("synthetic-browser-access-token");
+  expect(new URL(page.url()).search).toBe("");
   await page.getByRole("button", { name: "Sign out", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "Sign in with Auth0" }),
   ).toBeVisible();
   expect(errors).toEqual([]);
+  expect(unexpected).toEqual([]);
 });
 
 for (const scenario of [
   { name: "login denied", denied: true, message: "Sign-in failed" },
+  { name: "invalid state", invalidState: true, message: "Sign-in failed" },
   {
     name: "token exchange fails",
     tokenFailure: true,
@@ -172,9 +214,15 @@ for (const scenario of [
   },
 ])
   test(scenario.name, async ({ page }) => {
-    await mockAuth0(page, scenario);
+    const { seen, unexpected, tokenCalls } = await mockAuth0(page, scenario);
     await page.goto("/");
     await page.getByRole("button", { name: "Sign in with Auth0" }).click();
     await expect(page.getByRole("alert")).toContainText(scenario.message);
     await expect(page.getByRole("button", { name: /^INC-/ })).toHaveCount(0);
+    await expect(page).toHaveURL((url) => url.search === "");
+    expect(unexpected).toEqual([]);
+    if (scenario.invalidState) {
+      expect(tokenCalls()).toBe(0);
+      expect(seen).toEqual([]);
+    }
   });

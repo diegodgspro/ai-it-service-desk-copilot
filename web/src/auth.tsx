@@ -108,6 +108,16 @@ export function AuthenticatedSession({ children }: { children: ReactNode }) {
   } = useAuth0();
   const [failure, setFailure] = useState("");
   const [redirecting, setRedirecting] = useState(false);
+  useEffect(() => {
+    if (!error) return;
+    const parameters = new URLSearchParams(window.location.search);
+    if (
+      ["code", "state", "error", "error_description"].some((key) =>
+        parameters.has(key),
+      )
+    )
+      window.history.replaceState({}, document.title, window.location.pathname);
+  }, [error]);
   const session = useMemo<Session>(() => {
     const request = createApi(() =>
       getAccessTokenSilently({ authorizationParams: { audience: AUDIENCE } }),
@@ -211,9 +221,12 @@ export function AuthRoot({ children }: { children: ReactNode }) {
     );
   const domain = import.meta.env.VITE_AUTH0_DOMAIN;
   const clientId = import.meta.env.VITE_AUTH0_CLIENT_ID;
+  const validDomain =
+    /^[a-z0-9-]+(?:\.[a-z0-9-]+)?\.auth0\.com$/.test(domain || "") ||
+    (import.meta.env.MODE === "browser" && domain === "auth.fixture.invalid");
   if (
     !domain ||
-    !/^[a-z0-9-]+(?:\.[a-z0-9-]+)?\.auth0\.com$/.test(domain) ||
+    !validDomain ||
     !clientId?.trim() ||
     import.meta.env.VITE_AUTH0_AUDIENCE !== AUDIENCE
   )
