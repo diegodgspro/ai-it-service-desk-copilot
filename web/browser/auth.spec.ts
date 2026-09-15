@@ -1,6 +1,7 @@
 import { test, expect, type Page } from "@playwright/test";
 import { generateKeyPair, SignJWT } from "jose";
 import { createHash } from "node:crypto";
+import { blockUnexpectedExternalRequests } from "./network";
 
 // The real SDK runs against intercepted OAuth endpoints. No tenant is contacted.
 async function mockAuth0(
@@ -18,15 +19,9 @@ async function mockAuth0(
   const { privateKey } = await generateKeyPair("RS256");
   let nonce = "";
   const seen: string[] = [];
-  const unexpected: string[] = [];
+  const unexpected = await blockUnexpectedExternalRequests(page);
   let challenge = "";
   let tokenCalls = 0;
-  await page.route("**/*", (route) => {
-    const url = new URL(route.request().url());
-    if (url.origin === origin) return route.continue();
-    unexpected.push("external-request");
-    throw new Error("Unexpected external request was not intercepted");
-  });
   const queue = await (await page.request.get("/api/tickets")).json();
   const detail = await (await page.request.get("/api/tickets/INC-1042")).json();
   await page.route("**/auth/local", (route) =>
