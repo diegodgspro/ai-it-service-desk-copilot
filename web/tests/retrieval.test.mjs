@@ -125,6 +125,9 @@ test("FTS escaping, limits, filters, threshold, snippets and deterministic ties"
     [],
   );
   assert.equal((await request({ query: "x".repeat(501) })).status, 400);
+  for (const field of ["semanticMinScore", "timeoutMs", "signal", "embeddings", "semanticScores", "rrfK", "modelMetadata", "unknown"])
+    assert.equal((await request({ query: "printer", [field]: field === "signal" ? {} : 1 })).status, 400, field);
+  assert.equal((await request({ query: "printer", filters: { operatingSystem: "Toy" } })).status, 400);
 });
 test("approved-only is enforced, duplicates suppressed, auth/origin/JSON remain fail closed", async () => {
   await db
