@@ -43,17 +43,24 @@ export async function acquireBrowserLock(path) {
       throw new Error("Browser test lock changed during stale recovery");
     }
     let recovered = false;
+    let preserveStale = false;
     try {
       const moved = await readFile(stalePath, "utf8");
-      if (moved !== contents)
+      if (moved !== contents) {
+        preserveStale = true;
         throw new Error("Browser test lock changed during stale recovery");
+      }
       const movedOwner = JSON.parse(moved);
       if (
         Number.isSafeInteger(movedOwner.pid) &&
         movedOwner.pid > 0 &&
         processExists(movedOwner.pid)
       ) {
-        await rename(stalePath, path).catch(() => {});
+        try {
+          await rename(stalePath, path);
+        } catch {
+          preserveStale = true;
+        }
         throw new Error("Another browser test server is already running");
       }
       try {
@@ -69,7 +76,7 @@ export async function acquireBrowserLock(path) {
         throw createError;
       }
     } finally {
-      if (!recovered)
+      if (!preserveStale)
         await unlink(stalePath).catch((cleanupError) => {
           if (cleanupError?.code !== "ENOENT") throw cleanupError;
         });
