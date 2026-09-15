@@ -1,11 +1,6 @@
 import { spawn } from "node:child_process";
-import { dirname, join } from "node:path";
 import { acquireBrowserLock } from "./browser-lock.mjs";
 
-const npmCli = join(
-  dirname(process.execPath),
-  "node_modules/npm/bin/npm-cli.js",
-);
 const release = await acquireBrowserLock(".test-build/browser-server.lock");
 let released = false;
 const releaseOnce = async () => {
@@ -15,11 +10,11 @@ const releaseOnce = async () => {
 };
 
 const child = spawn(
-  process.execPath,
-  [npmCli, "run", "test:browser:server:unlocked"],
+  process.platform === "win32" ? "npm.cmd" : "npm",
+  ["run", "test:browser:server:unlocked"],
   {
     stdio: "inherit",
-    shell: false,
+    shell: process.platform === "win32",
   },
 );
 
