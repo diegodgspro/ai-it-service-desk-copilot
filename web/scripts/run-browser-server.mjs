@@ -1,8 +1,11 @@
 import { spawn } from "node:child_process";
+import { dirname, join } from "node:path";
 import { acquireBrowserLock } from "./browser-lock.mjs";
 
-if (!process.env.npm_execpath)
-  throw new Error("Browser test server must be started through npm");
+const npmCli = join(
+  dirname(process.execPath),
+  "node_modules/npm/bin/npm-cli.js",
+);
 const release = await acquireBrowserLock(".test-build/browser-server.lock");
 let released = false;
 const releaseOnce = async () => {
@@ -13,7 +16,7 @@ const releaseOnce = async () => {
 
 const child = spawn(
   process.execPath,
-  [process.env.npm_execpath, "run", "test:browser:server:unlocked"],
+  [npmCli, "run", "test:browser:server:unlocked"],
   {
     stdio: "inherit",
     shell: false,

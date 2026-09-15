@@ -11,7 +11,7 @@ export default defineConfig({
     ...(process.platform === "win32" ? { channel: "msedge" } : {}),
   },
   webServer: {
-    command: "npm run test:browser:server",
+    command: "node scripts/run-browser-server.mjs",
     env: {
       WRANGLER_SEND_METRICS: "false",
       VITE_AUTH0_DOMAIN: "auth.fixture.invalid",
@@ -20,6 +20,7 @@ export default defineConfig({
     },
     url: "http://127.0.0.1:8787",
     reuseExistingServer: false,
+    gracefulShutdown: { signal: "SIGTERM", timeout: 5000 },
     timeout: 120000,
   },
   outputDir: ".test-build/browser-results",

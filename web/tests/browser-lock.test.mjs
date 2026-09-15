@@ -66,14 +66,17 @@ test("browser lock rejects a second process before artifacts change", async () =
   }
 });
 
-test("browser lock detects a stale PID without deleting it", async () => {
+test("browser lock recovers a stale PID with atomic takeover", async () => {
   const root = await mkdtemp(join(tmpdir(), "deskpilot-browser-lock-stale-"));
   const path = join(root, "browser.lock");
   const stale = JSON.stringify({ pid: 2_147_483_647, token: "stale" });
   try {
     await writeFile(path, stale);
-    await assert.rejects(acquireBrowserLock(path), /remove the lock manually/);
-    assert.equal(await readFile(path, "utf8"), stale);
+    const release = await acquireBrowserLock(path);
+    const owner = JSON.parse(await readFile(path, "utf8"));
+    assert.equal(owner.pid, process.pid);
+    assert.notEqual(await readFile(path, "utf8"), stale);
+    await release();
   } finally {
     await rm(root, { recursive: true, force: true });
   }
