@@ -17,6 +17,14 @@ async function request(body, headers = {}) {
   });
   return { status: r.status, data: await r.json() };
 }
+async function feedback(body, headers = {}) {
+  const r = await mf.dispatchFetch(origin + "/api/knowledge/feedback", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Origin: origin, ...headers },
+    body: typeof body === "string" ? body : JSON.stringify(body),
+  });
+  return { status: r.status, data: await r.json() };
+}
 before(async () => {
   const out = await build({
     entryPoints: ["worker/index.ts"],
@@ -110,16 +118,15 @@ test("FTS escaping, limits, filters, threshold, snippets and deterministic ties"
         !/[<>]/.test(x.excerpt),
     ),
   );
-  assert.deepEqual(
-    (
+  const repeated = (
       await request({
         query: "printer queue spooler",
         filters: { service: "Printing", language: "en" },
         topK: 3,
       })
-    ).data,
-    first.data,
-  );
+    ).data;
+  assert.notEqual(repeated.retrievalId, first.data.retrievalId);
+  assert.deepEqual(repeated.results, first.data.results);
   assert.deepEqual(
     (await request({ query: "printer", minScore: 1 })).data.results,
     [],
@@ -205,6 +212,41 @@ test("approved-only is enforced, duplicates suppressed, auth/origin/JSON remain 
     401,
   );
   await prod.dispose();
+});
+
+test("feedback is strict, idempotent, append-only and summarized without sensitive data", async () => {
+  const retrieval = await request({ query: "printer queue spooler", filters:{approvalStatus:"approved"} });
+  const item = retrieval.data.results[0];
+  const base = { clientEventId:crypto.randomUUID(), retrievalId:retrieval.data.retrievalId, documentId:item.documentId, chunkId:item.chunkId, citation:item.citation.label, documentVersion:item.metadata.version, documentHash:item.documentHash };
+  const helpful = await feedback({...base,outcome:"helpful",reason:"actionable"});
+  assert.equal(helpful.status,201);
+  const duplicate = await feedback({...base,outcome:"helpful",reason:"actionable"});
+  assert.equal(duplicate.status,200); assert.equal(duplicate.data.feedbackId,helpful.data.feedbackId); assert.equal(duplicate.data.duplicate,true);
+  for (const invalid of [
+    {...base,clientEventId:crypto.randomUUID(),outcome:"helpful",reason:"irrelevant"},
+    {...base,clientEventId:crypto.randomUUID(),outcome:"not_helpful",reason:"wrong_service",actor:"forged"},
+    {...base,clientEventId:crypto.randomUUID(),outcome:"not_helpful",reason:"wrong_service",createdAt:"2000-01-01"},
+    {...base,clientEventId:crypto.randomUUID(),outcome:"not_helpful",reason:"wrong_service",citation:"bad@1.0#citation"},
+    {...base,clientEventId:crypto.randomUUID(),outcome:"not_helpful",reason:"wrong_service",documentId:"missing"},
+  ]) assert.equal((await feedback(invalid)).status,400);
+  const correction = await feedback({...base,clientEventId:crypto.randomUUID(),outcome:"not_helpful",reason:"outdated",supersedesFeedbackId:helpful.data.feedbackId});
+  assert.equal(correction.status,201); assert.notEqual(correction.data.feedbackId,helpful.data.feedbackId);
+  const rows=await db.prepare("SELECT feedback_id,outcome FROM knowledge_feedback WHERE retrieval_id=? ORDER BY created_at").bind(base.retrievalId).all();
+  assert.equal(rows.results.length,2);
+  await assert.rejects(db.prepare("UPDATE knowledge_feedback SET reason='clear'").run());
+  await assert.rejects(db.prepare("DELETE FROM knowledge_feedback").run());
+  const response=await mf.dispatchFetch(origin+"/api/knowledge/feedback/summary");
+  assert.equal(response.status,200); const summary=await response.json();
+  assert.equal(summary.evaluatedEvidenceCount>=1,true); assert.equal(summary.reasons.some(x=>x.reason==="outdated"),true);
+  const serialized=JSON.stringify(summary).toLowerCase();
+  for(const forbidden of ["actor","auth0","email","permission","query","description","excerpt","token"]) assert.equal(serialized.includes(forbidden),false,forbidden);
+});
+
+test("feedback endpoint enforces origin, JSON and the UTF-8 byte limit", async()=>{
+  assert.equal((await feedback({}, {Origin:"https://attacker.invalid"})).status,403);
+  assert.equal((await feedback("{}", {"Content-Type":"text/plain"})).status,415);
+  const r=await mf.dispatchFetch(origin+"/api/knowledge/feedback",{method:"POST",headers:{"Content-Type":"application/json",Origin:origin},body:JSON.stringify({padding:"é".repeat(9000)})});
+  assert.equal(r.status,413);
 });
 test("reviewed golden retrieval evaluation meets the lexical baseline", async () => {
   let hit1 = 0,

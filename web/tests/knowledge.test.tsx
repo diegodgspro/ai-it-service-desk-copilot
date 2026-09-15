@@ -31,11 +31,13 @@ const result = {
     chunkId: "kb-hardware-printing--01-symptoms",
     label: "kb-hardware-printing@1.0#kb-hardware-printing--01-symptoms",
   },
+  documentHash: "a".repeat(64),
 };
+const emptySummary = {retrievedEvidenceCount:1,evaluatedEvidenceCount:0,feedbackCoveragePercent:0,helpfulPercent:null,reasons:[],documents:[]};
 afterEach(cleanup);
 describe("knowledge evidence", () => {
   it("renders an accessible expandable citation without interpreting evidence", async () => {
-    const api = vi.fn(async () => ({ results: [result] }));
+    const api = vi.fn(async (path:string) => path.endsWith("summary") ? emptySummary : ({ results: [result], retrievalId:"retrieval-1" }));
     render(<KnowledgeEvidence api={api} query="printer queue" />);
     const heading = await screen.findByRole("heading", {
       name: "Hardware: Printing",
@@ -51,7 +53,7 @@ describe("knowledge evidence", () => {
   it("shows the explicit no-results state", async () => {
     render(
       <KnowledgeEvidence
-        api={vi.fn(async () => ({ results: [] }))}
+        api={vi.fn(async (path:string) => path.endsWith("summary") ? emptySummary : ({ results: [], retrievalId:"retrieval-2" }))}
         query="irrelevant lunch"
       />,
     );
@@ -60,5 +62,23 @@ describe("knowledge evidence", () => {
         "No sufficiently relevant approved evidence found.",
       ),
     ).toBeTruthy();
+  });
+  it("saves structured feedback, reports failure and retries with the same idempotency key", async()=>{
+    let attempts=0; const bodies:unknown[]=[];
+    const api=vi.fn(async(path:string,_method?:string,body?:unknown)=>{
+      if(path.endsWith("summary")) return emptySummary;
+      if(path.endsWith("feedback")){bodies.push(body);attempts++;if(attempts===1)throw new Error("Temporary failure");return {feedbackId:"feedback-1",createdAt:"2026-09-14T00:00:00Z",duplicate:false};}
+      return {results:[result],retrievalId:"retrieval-3"};
+    });
+    const user=userEvent.setup(); render(<KnowledgeEvidence api={api} query="printer queue"/>);
+    await user.click(await screen.findByRole("heading",{name:"Hardware: Printing"}));
+    await user.click(screen.getByLabelText("Not helpful"));
+    await user.selectOptions(screen.getByLabelText("Reason"),"outdated");
+    await user.click(screen.getByRole("button",{name:"Save feedback"}));
+    expect((await screen.findByRole("alert")).textContent).toContain("Temporary failure");
+    await user.click(screen.getByRole("button",{name:"Retry"}));
+    expect((await screen.findByRole("status")).textContent).toContain("Feedback saved");
+    expect((bodies[0] as any).clientEventId).toBe((bodies[1] as any).clientEventId);
+    expect((bodies[1] as any).outcome).toBe("not_helpful");
   });
 });

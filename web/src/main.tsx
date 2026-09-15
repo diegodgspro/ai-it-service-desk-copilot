@@ -458,6 +458,7 @@ function App() {
                             <KnowledgeEvidence
                               api={api}
                               query={`${current.title} ${current.description} ${analysis.category}`}
+                              context={{incidentId:current.id,incidentVersion:current.version,analysisContextId:current.analysis_id ?? undefined}}
                               filters={{
                                 language: "en",
                                 approvalStatus: "approved",
