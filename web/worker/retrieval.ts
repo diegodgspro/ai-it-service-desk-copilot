@@ -63,6 +63,7 @@ type Row = {
   last_reviewed: string;
   tags_json: string;
   classification: "synthetic-demo";
+  document_hash: string;
 };
 export class D1FtsRetriever implements Retriever {
   constructor(private db: D1Database) {}
@@ -88,7 +89,7 @@ export class D1FtsRetriever implements Retriever {
     if (f.approvalStatus && f.approvalStatus !== "approved") return [];
     const rows = await this.db
       .prepare(
-        `SELECT d.document_id,c.chunk_id,d.title,c.heading,c.content,bm25(knowledge_fts,4.0,2.0,1.0) rank,d.source_type,d.service,d.category,d.product,d.operating_system,d.language,d.approval_status,d.version,d.last_reviewed,d.tags_json,d.classification FROM knowledge_fts JOIN knowledge_chunks c ON c.chunk_pk=knowledge_fts.rowid JOIN knowledge_documents d ON d.document_id=c.document_id WHERE ${clauses.join(" AND ")} ORDER BY rank ASC,d.document_id ASC,c.ordinal ASC LIMIT ?`,
+        `SELECT d.document_id,c.chunk_id,d.title,c.heading,c.content,bm25(knowledge_fts,4.0,2.0,1.0) rank,d.source_type,d.service,d.category,d.product,d.operating_system,d.language,d.approval_status,d.version,d.last_reviewed,d.tags_json,d.classification,d.content_hash document_hash FROM knowledge_fts JOIN knowledge_chunks c ON c.chunk_pk=knowledge_fts.rowid JOIN knowledge_documents d ON d.document_id=c.document_id WHERE ${clauses.join(" AND ")} ORDER BY rank ASC,d.document_id ASC,c.ordinal ASC LIMIT ?`,
       )
       .bind(...binds, Math.min(50, topK * 5))
       .all<Row>();
@@ -150,6 +151,7 @@ export class D1FtsRetriever implements Retriever {
           chunkId: row.chunk_id,
           label: `${row.document_id}@${row.version}#${row.chunk_id}`,
         },
+        documentHash: row.document_hash,
       });
       if (out.length === topK) break;
     }
