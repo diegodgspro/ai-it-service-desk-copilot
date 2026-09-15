@@ -10,6 +10,29 @@ import {
 import { AuthenticationError, createApi, type Api } from "./api";
 
 const AUDIENCE = "https://deskpilot-api";
+export const OAUTH_CALLBACK_PARAMETERS = [
+  "code",
+  "state",
+  "error",
+  "error_description",
+  "error_uri",
+  "session_state",
+  "iss",
+  // Defensive cleanup for implicit-flow values that PKCE never expects.
+  "access_token",
+  "id_token",
+  "token_type",
+  "expires_in",
+  "scope",
+] as const;
+
+export function sanitizeOAuthCallbackUrl(value: string) {
+  const url = new URL(value);
+  for (const parameter of OAUTH_CALLBACK_PARAMETERS)
+    url.searchParams.delete(parameter);
+  const query = url.searchParams.toString();
+  return `${url.pathname}${query ? `?${query}` : ""}${url.hash}`;
+}
 type Session = {
   api: Api;
   displayName: string;
@@ -108,6 +131,16 @@ export function AuthenticatedSession({ children }: { children: ReactNode }) {
   } = useAuth0();
   const [failure, setFailure] = useState("");
   const [redirecting, setRedirecting] = useState(false);
+  useEffect(() => {
+    if (!error) return;
+    const parameters = new URLSearchParams(window.location.search);
+    if (OAUTH_CALLBACK_PARAMETERS.some((key) => parameters.has(key)))
+      window.history.replaceState(
+        {},
+        document.title,
+        sanitizeOAuthCallbackUrl(window.location.href),
+      );
+  }, [error]);
   const session = useMemo<Session>(() => {
     const request = createApi(() =>
       getAccessTokenSilently({ authorizationParams: { audience: AUDIENCE } }),
@@ -211,9 +244,12 @@ export function AuthRoot({ children }: { children: ReactNode }) {
     );
   const domain = import.meta.env.VITE_AUTH0_DOMAIN;
   const clientId = import.meta.env.VITE_AUTH0_CLIENT_ID;
+  const validDomain =
+    /^[a-z0-9-]+(?:\.[a-z0-9-]+)?\.auth0\.com$/.test(domain || "") ||
+    (import.meta.env.MODE === "browser" && domain === "auth.fixture.invalid");
   if (
     !domain ||
-    !/^[a-z0-9-]+(?:\.[a-z0-9-]+)?\.auth0\.com$/.test(domain) ||
+    !validDomain ||
     !clientId?.trim() ||
     import.meta.env.VITE_AUTH0_AUDIENCE !== AUDIENCE
   )
@@ -231,7 +267,11 @@ export function AuthRoot({ children }: { children: ReactNode }) {
         scope: "openid profile email",
       }}
       onRedirectCallback={() =>
-        window.history.replaceState({}, document.title, "/")
+        window.history.replaceState(
+          {},
+          document.title,
+          sanitizeOAuthCallbackUrl(window.location.href),
+        )
       }
     >
       <AuthenticatedSession>{children}</AuthenticatedSession>

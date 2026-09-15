@@ -1,4 +1,9 @@
 import { test, expect } from "@playwright/test";
+import { blockUnexpectedExternalRequests } from "./network";
+
+test.beforeEach(async ({ page }) => {
+  await blockUnexpectedExternalRequests(page);
+});
 test("create a reviewed incident through deterministic intake on mobile", async ({
   page,
 }) => {
