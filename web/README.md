@@ -2,7 +2,7 @@
 
 ## Retrieval feedback (Unreleased)
 
-`POST /api/knowledge/feedback` requires Auth0/server-side write permission, exact same origin, JSON and a 16 KiB byte limit. `GET /api/knowledge/feedback/summary` requires authenticated read permission and returns only bounded aggregates. Migration `0005_knowledge_feedback.sql` is additive and local-only until separately authorized. Retrieval impressions and feedback store identifiers and counts, never raw queries, ticket descriptions or evidence text. See [the full contract](../docs/retrieval-feedback-observability.md).
+`POST /api/knowledge/feedback` requires Auth0/server-side write permission, exact same origin, JSON and a 16 KiB byte limit. `GET /api/knowledge/feedback/summary` also requires server-side write permission and returns only bounded global aggregates; read-only users cannot inspect small-cohort feedback. Migration `0005_knowledge_feedback.sql` is additive and local-only until separately authorized. Retrieval impressions and feedback store identifiers and counts, never raw queries, ticket descriptions or evidence text. See [the full contract](../docs/retrieval-feedback-observability.md).
 
 ## Enterprise retrieval foundation
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import type { RetrievalFilters, RetrievalResult } from "../shared/knowledge";
 import { helpfulReasons, notHelpfulReasons, type FeedbackOutcome, type FeedbackReason, type FeedbackSummary, type KnowledgeFeedbackReceipt, type RetrievalContext } from "../shared/feedback";
 import type { Api } from "./api";
@@ -114,6 +114,9 @@ export function KnowledgeEvidence({
 function EvidenceFeedback({api,evidence,retrievalId,onSaved}:{api:Api;evidence:RetrievalResult;retrievalId:string;onSaved:()=>void}) {
   const [outcome,setOutcome]=useState<FeedbackOutcome>("helpful"), [reason,setReason]=useState<FeedbackReason>("relevant");
   const [busy,setBusy]=useState(false), [error,setError]=useState(""), [receipt,setReceipt]=useState<KnowledgeFeedbackReceipt|null>(null), [clientEventId,setClientEventId]=useState("");
+  const errorRef=useRef<HTMLDivElement>(null), statusRef=useRef<HTMLParagraphElement>(null);
+  useEffect(()=>{ if(error) errorRef.current?.focus(); },[error]);
+  useEffect(()=>{ if(receipt) statusRef.current?.focus(); },[receipt]);
   const reasons = outcome === "helpful" ? helpfulReasons : notHelpfulReasons;
   async function save() {
     const eventId=clientEventId || crypto.randomUUID(); if(!clientEventId)setClientEventId(eventId);
@@ -125,7 +128,7 @@ function EvidenceFeedback({api,evidence,retrievalId,onSaved}:{api:Api;evidence:R
     <div className="feedback-outcomes">{(["helpful","not_helpful"] as const).map(x=><label key={x}><input type="radio" name={`outcome-${evidence.chunkId}`} checked={outcome===x} onChange={()=>{setOutcome(x);setReason(x==="helpful"?"relevant":"irrelevant")}}/> {x==="helpful"?"Helpful":"Not helpful"}</label>)}</div>
     <label>Reason<select value={reason} onChange={e=>setReason(e.target.value as FeedbackReason)}>{reasons.map(x=><option key={x} value={x}>{x.replaceAll("_"," ")}</option>)}</select></label>
     <button className="secondary" disabled={busy||!retrievalId} onClick={()=>void save()}>{busy?"Saving…":receipt?"Save correction":"Save feedback"}</button>
-    {receipt&&<p role="status" className="feedback-saved">Feedback saved. Corrections create a new history event.</p>}
-    {error&&<div role="alert" className="alert error">{error} <button className="secondary" onClick={()=>void save()}>Retry</button></div>}
+    {receipt&&<p ref={statusRef} tabIndex={-1} role="status" className="feedback-saved">Feedback saved. Corrections create a new history event.</p>}
+    {error&&<div ref={errorRef} tabIndex={-1} role="alert" className="alert error">{error} <button className="secondary" onClick={()=>void save()}>Retry</button></div>}
   </fieldset>;
 }

@@ -75,9 +75,9 @@ describe("knowledge evidence", () => {
     await user.click(screen.getByLabelText("Not helpful"));
     await user.selectOptions(screen.getByLabelText("Reason"),"outdated");
     await user.click(screen.getByRole("button",{name:"Save feedback"}));
-    expect((await screen.findByRole("alert")).textContent).toContain("Temporary failure");
+    const alert=await screen.findByRole("alert"); expect(alert.textContent).toContain("Temporary failure"); expect(document.activeElement).toBe(alert);
     await user.click(screen.getByRole("button",{name:"Retry"}));
-    expect((await screen.findByRole("status")).textContent).toContain("Feedback saved");
+    const status=await screen.findByRole("status"); expect(status.textContent).toContain("Feedback saved"); expect(document.activeElement).toBe(status);
     expect((bodies[0] as any).clientEventId).toBe((bodies[1] as any).clientEventId);
     expect((bodies[1] as any).outcome).toBe("not_helpful");
   });

@@ -213,6 +213,23 @@ test("approved-only is enforced, duplicates suppressed, auth/origin/JSON remain 
   );
   await prod.dispose();
 });
+test("0005 upgrades a populated 0001-0004 database without blocking knowledge refresh", async()=>{
+  const upgradePersist=await mkdtemp(join(tmpdir(),"deskpilot-feedback-upgrade-"));
+  const upgrade=new Miniflare(convertV4MiniflareOptions({modules:true,script:"export default {fetch(){return new Response('ok')}}",compatibilityDate:"2026-09-09",d1Databases:{DB:"upgrade-db"},resourcePersistencePath:upgradePersist}));
+  try {
+    const upgradeDb=await upgrade.getD1Database("DB");
+    for(const n of ["0001_schema.sql","0002_synthetic_seed.sql","0003_structured_intake.sql","0004_enterprise_knowledge_fts.sql"])
+      await upgradeDb.exec((await readFile("migrations/"+n,"utf8")).replace(/^--.*$/gm,"").replaceAll("\n"," "));
+    const seed=(await readFile("knowledge-seed.sql","utf8")).replace(/^--.*$/gm,"").replaceAll("\n"," ");
+    await upgradeDb.exec(seed);
+    await upgradeDb.prepare("INSERT INTO audit(ticket_id,kind,actor,detail) VALUES('INC-1041','upgrade-fixture','synthetic','preserve')").run();
+    await upgradeDb.exec((await readFile("migrations/0005_knowledge_feedback.sql","utf8")).replace(/^--.*$/gm,"").replaceAll("\n"," "));
+    assert.equal((await upgradeDb.prepare("SELECT COUNT(*) n FROM tickets").first()).n,8);
+    assert.equal((await upgradeDb.prepare("SELECT COUNT(*) n FROM audit WHERE kind='upgrade-fixture'").first()).n,1);
+    await upgradeDb.exec(seed);
+    assert.equal((await upgradeDb.prepare("SELECT COUNT(*) n FROM knowledge_documents").first()).n,10);
+  } finally { await upgrade.dispose(); await rm(upgradePersist,{recursive:true,force:true}); }
+});
 
 test("feedback is strict, idempotent, append-only and summarized without sensitive data", async () => {
   const retrieval = await request({ query: "printer queue spooler", filters:{approvalStatus:"approved"} });
@@ -222,6 +239,11 @@ test("feedback is strict, idempotent, append-only and summarized without sensiti
   assert.equal(helpful.status,201);
   const duplicate = await feedback({...base,outcome:"helpful",reason:"actionable"});
   assert.equal(duplicate.status,200); assert.equal(duplicate.data.feedbackId,helpful.data.feedbackId); assert.equal(duplicate.data.duplicate,true);
+  assert.equal((await feedback({...base,outcome:"helpful",reason:"clear"})).status,409,"an idempotency key is bound to its original representation");
+  const concurrentItem=retrieval.data.results[1], concurrent={clientEventId:crypto.randomUUID(),retrievalId:retrieval.data.retrievalId,documentId:concurrentItem.documentId,chunkId:concurrentItem.chunkId,citation:concurrentItem.citation.label,documentVersion:concurrentItem.metadata.version,documentHash:concurrentItem.documentHash,outcome:"not_helpful",reason:"insufficient_detail"};
+  const concurrentResults=await Promise.all([feedback(concurrent),feedback(concurrent)]);
+  assert.deepEqual(concurrentResults.map(x=>x.status).sort(),[200,201]);
+  assert.equal((await db.prepare("SELECT COUNT(*) n FROM knowledge_feedback WHERE client_event_id=?").bind(concurrent.clientEventId).first()).n,1);
   for (const invalid of [
     {...base,clientEventId:crypto.randomUUID(),outcome:"helpful",reason:"irrelevant"},
     {...base,clientEventId:crypto.randomUUID(),outcome:"not_helpful",reason:"wrong_service",actor:"forged"},
@@ -229,17 +251,23 @@ test("feedback is strict, idempotent, append-only and summarized without sensiti
     {...base,clientEventId:crypto.randomUUID(),outcome:"not_helpful",reason:"wrong_service",citation:"bad@1.0#citation"},
     {...base,clientEventId:crypto.randomUUID(),outcome:"not_helpful",reason:"wrong_service",documentId:"missing"},
   ]) assert.equal((await feedback(invalid)).status,400);
+  const removed=retrieval.data.results[2];
+  await db.prepare("DELETE FROM knowledge_chunks WHERE chunk_id=?").bind(removed.chunkId).run();
+  assert.equal((await feedback({...base,clientEventId:crypto.randomUUID(),documentId:removed.documentId,chunkId:removed.chunkId,citation:removed.citation.label,documentVersion:removed.metadata.version,documentHash:removed.documentHash,outcome:"helpful",reason:"relevant"})).status,400);
   const correction = await feedback({...base,clientEventId:crypto.randomUUID(),outcome:"not_helpful",reason:"outdated",supersedesFeedbackId:helpful.data.feedbackId});
   assert.equal(correction.status,201); assert.notEqual(correction.data.feedbackId,helpful.data.feedbackId);
+  const correctionRace=await Promise.all(["clear","relevant"].map(reason=>feedback({...base,clientEventId:crypto.randomUUID(),outcome:"helpful",reason,supersedesFeedbackId:correction.data.feedbackId})));
+  assert.deepEqual(correctionRace.map(x=>x.status).sort(),[201,409]);
   const rows=await db.prepare("SELECT feedback_id,outcome FROM knowledge_feedback WHERE retrieval_id=? ORDER BY created_at").bind(base.retrievalId).all();
-  assert.equal(rows.results.length,2);
+  assert.equal(rows.results.length,4);
   await assert.rejects(db.prepare("UPDATE knowledge_feedback SET reason='clear'").run());
   await assert.rejects(db.prepare("DELETE FROM knowledge_feedback").run());
   const response=await mf.dispatchFetch(origin+"/api/knowledge/feedback/summary");
   assert.equal(response.status,200); const summary=await response.json();
-  assert.equal(summary.evaluatedEvidenceCount>=1,true); assert.equal(summary.reasons.some(x=>x.reason==="outdated"),true);
+  assert.equal(summary.evaluatedEvidenceCount>=2,true);
   const serialized=JSON.stringify(summary).toLowerCase();
   for(const forbidden of ["actor","auth0","email","permission","query","description","excerpt","token"]) assert.equal(serialized.includes(forbidden),false,forbidden);
+  await db.exec((await readFile("knowledge-seed.sql","utf8")).replace(/^--.*$/gm,"").replaceAll("\n"," "));
 });
 
 test("feedback endpoint enforces origin, JSON and the UTF-8 byte limit", async()=>{

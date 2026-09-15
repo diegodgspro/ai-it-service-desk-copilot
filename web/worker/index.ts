@@ -149,6 +149,7 @@ export default {
         return "receipt" in result ? json(result.receipt,result.status) : json({error:result.error},result.status);
       }
       if (url.pathname === "/api/knowledge/feedback/summary" && request.method === "GET") {
+        if (!identity.permissions.includes("write")) return json({error:"Write permission required"},403);
         if (url.search) return json({error:"Query parameters are not supported."},400);
         const summary = await feedbackSummary(env.DB);
         logSafeEvent({requestId,route:url.pathname,status:200,durationMs:Date.now()-started});

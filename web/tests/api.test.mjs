@@ -585,6 +585,7 @@ test("Auth0 RS256 authentication and server-side operation grants in workerd/D1"
       async () => {
         const reader = await sign();
         assert.equal((await request(reader)).status, 200);
+        assert.equal((await runtime.dispatchFetch(origin+"/api/knowledge/feedback/summary",{headers:{Authorization:"Bearer "+reader}})).status,403);
         assert.equal(
           (
             await request(
@@ -598,6 +599,7 @@ test("Auth0 RS256 authentication and server-side operation grants in workerd/D1"
           403,
         );
         const writer = await sign({ sub: "auth0|fixture-writer" });
+        assert.equal((await runtime.dispatchFetch(origin+"/api/knowledge/feedback/summary",{headers:{Authorization:"Bearer "+writer}})).status,200);
         const {
           data: { ticket },
         } = await request(writer, "GET", undefined, {}, "/INC-1042");

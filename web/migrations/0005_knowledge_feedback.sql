@@ -16,8 +16,8 @@ CREATE TABLE knowledge_retrieval_events (
 
 CREATE TABLE knowledge_retrieval_items (
  retrieval_id TEXT NOT NULL REFERENCES knowledge_retrieval_events(retrieval_id),
- document_id TEXT NOT NULL REFERENCES knowledge_documents(document_id),
- chunk_id TEXT NOT NULL REFERENCES knowledge_chunks(chunk_id),
+ document_id TEXT NOT NULL,
+ chunk_id TEXT NOT NULL,
  PRIMARY KEY(retrieval_id,chunk_id)
 );
 
@@ -30,8 +30,8 @@ CREATE TABLE knowledge_feedback (
  incident_version INTEGER,
  analysis_context_id TEXT,
  retrieval_mode TEXT NOT NULL CHECK(retrieval_mode='lexical'),
- document_id TEXT NOT NULL REFERENCES knowledge_documents(document_id),
- chunk_id TEXT NOT NULL REFERENCES knowledge_chunks(chunk_id),
+ document_id TEXT NOT NULL,
+ chunk_id TEXT NOT NULL,
  citation TEXT NOT NULL,
  document_version TEXT NOT NULL,
  document_hash TEXT NOT NULL,
