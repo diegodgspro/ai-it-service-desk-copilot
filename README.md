@@ -1,5 +1,9 @@
 # DeskPilot
 
+## Unreleased — Retrieval Feedback & Observability foundation
+
+Authenticated technicians can record structured feedback on approved lexical evidence. The implementation is not deployed: production and the latest stable release remain v1.2.0. Feedback is an imperfect human laboratory signal, never accuracy or ground truth, and has no path to ranking, thresholds, incident policy, automation or online learning. See [the design and limits](docs/retrieval-feedback-observability.md).
+
 ## v1.2.0 — Enterprise RAG Foundation
 
 Authenticated incident analysis and reviewed structured intake now retrieve approved synthetic support evidence through D1 FTS5 lexical search. Results provide safe excerpts, metadata, observable match reasons, and stable citations. This is retrieval infrastructure for possible future RAG: it includes no LLM generation, embeddings, semantic/vector search, or external AI service. See [retrieval design and evaluation](docs/rag.md).

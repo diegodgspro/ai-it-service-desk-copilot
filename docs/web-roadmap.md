@@ -1,5 +1,10 @@
 # DeskPilot roadmap
 
+## In development for v1.3.0 — Retrieval Feedback & Observability
+
+- Structured, append-only human feedback for approved FTS5 evidence and aggregate-only operational metrics.
+- No semantic/hybrid promotion, tuning, online learning, ranking/threshold adjustment, incident policy change or production deployment.
+
 ## Delivered in v1.2.0 — September 13, 2026
 
 - Approved synthetic ingestion, stable chunks, D1 FTS5 lexical retrieval, citations, filters, incident/intake evidence, and measured evaluation.

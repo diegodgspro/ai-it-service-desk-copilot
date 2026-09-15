@@ -47,3 +47,6 @@ The Python lab has no database and no shell executor. The mock connector and app
 ## Deliberately excluded
 
 Multi-tenancy, enterprise identity governance, real ITSM ticket writes, automated account changes, live PowerShell execution, vector databases, SLA timers, attachment processing and unattended resolution. These require a separate threat model and deployment design.
+# Unreleased retrieval feedback boundary
+
+The React evidence component submits allowlisted enums to the authenticated Worker. The Worker verifies the evidence against the approved D1 corpus and the server-recorded lexical retrieval impression, derives actor and time, and appends an immutable event through migration 0005. Aggregate reads expose no identity or source text. No feedback dependency exists in retrieval ranking, analysis, intake policy, authorization, automation, decision or handover paths.
