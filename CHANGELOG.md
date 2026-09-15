@@ -4,6 +4,14 @@ All notable changes follow [Keep a Changelog](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+### Added
+
+- Foundation for retrieval feedback: accessible structured helpful/not-helpful controls, append-only D1 events, idempotent authenticated API, aggregate-only retrieval quality view, and sanitized operational logs.
+
+### Security
+
+- Feedback accepts no free text or client identity/timestamp and cannot change retrieval, policy, automation, analysis, incident priority or state. Query and evidence text are not persisted in feedback observability.
+
 ## [1.2.0] - 2026-09-13
 
 ### Fixed

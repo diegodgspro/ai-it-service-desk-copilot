@@ -1,3 +1,5 @@
+import { validateRetrievalContext } from "./feedback";
+
 export const approvalStatuses = ["draft", "approved", "retired"] as const;
 export const sourceTypes = ["runbook", "policy"] as const;
 export type ApprovalStatus = (typeof approvalStatuses)[number];
@@ -40,6 +42,7 @@ export type RetrievalQuery = {
   filters?: RetrievalFilters;
   topK?: number;
   minScore?: number;
+  context?: import("./feedback").RetrievalContext;
 };
 export type Citation = { documentId: string; chunkId: string; label: string };
 export type RetrievalResult = {
@@ -53,6 +56,7 @@ export type RetrievalResult = {
   matchReason: string;
   metadata: KnowledgeMetadata;
   citation: Citation;
+  documentHash: string;
 };
 export type EvaluationCase = {
   id: string;
@@ -126,7 +130,7 @@ export function validateRetrievalQuery(
     f = x.filters as Record<string, unknown> | undefined;
   if (
     Object.keys(x).some(
-      (k) => !["query", "filters", "topK", "minScore"].includes(k),
+      (k) => !["query", "filters", "topK", "minScore", "context"].includes(k),
     ) ||
     !text(x.query, 500) ||
     (x.topK !== undefined &&
@@ -137,6 +141,7 @@ export function validateRetrievalQuery(
       (typeof x.minScore !== "number" || x.minScore < 0 || x.minScore > 1))
   )
     return false;
+  if (!validateRetrievalContext(x.context)) return false;
   return (
     !f ||
     (typeof f === "object" &&

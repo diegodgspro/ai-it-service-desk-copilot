@@ -79,6 +79,18 @@ test("review, simulate, invalidate and resolve an incident on desktop and mobile
   await expect(page.getByLabel("Stable citation").first()).toContainText(
     "kb-hardware-printing@1.0#",
   );
+  const negative=page.getByLabel("Not helpful").first();
+  await negative.focus(); await page.keyboard.press("Space"); await expect(negative).toBeChecked();
+  await page.getByLabel("Reason").first().selectOption("outdated");
+  await page.route("**/api/knowledge/feedback",(route)=>route.abort());
+  await page.getByRole("button",{name:"Save feedback"}).first().click();
+  const feedbackError=page.getByRole("alert").last(); await expect(feedbackError).toBeFocused();
+  await page.unroute("**/api/knowledge/feedback");
+  await feedbackError.getByRole("button",{name:"Retry"}).click();
+  const saved=page.getByRole("status").filter({hasText:"Feedback saved"}); await expect(saved).toBeFocused();
+  await page.setViewportSize({width:390,height:844});
+  expect(await page.locator(".evidence-feedback").first().evaluate((x)=>x.scrollWidth<=x.clientWidth)).toBe(true);
+  await page.setViewportSize({width:1440,height:1100});
   await page.getByRole("button", { name: "03Automation" }).click();
   await page.getByRole("button", { name: "Approve simulation" }).click();
   await expect(
