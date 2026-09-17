@@ -122,13 +122,17 @@ async function mockAuth0(
   });
   await page.route("**/api/**", async (route) => {
     seen.push(route.request().headers()["authorization"]);
+    const pathname = new URL(route.request().url()).pathname;
+    let json: unknown = detail;
+    if (pathname === "/api/tickets/page")
+      json = { items: queue, nextCursor: null };
+    else if (pathname.endsWith("/audit"))
+      json = { items: detail.audit, nextCursor: null };
+    else if (pathname.endsWith("/analyses"))
+      json = { items: [], nextCursor: null };
     await route.fulfill({
       status: options.apiStatus || 200,
-      json: options.apiStatus
-        ? { error: "Denied" }
-        : route.request().url().endsWith("/tickets")
-          ? queue
-          : detail,
+      json: options.apiStatus ? { error: "Denied" } : json,
     });
   });
   return { seen, unexpected, tokenCalls: () => tokenCalls };
@@ -216,7 +220,7 @@ for (const scenario of [
     const { seen, unexpected, tokenCalls } = await mockAuth0(page, scenario);
     await page.goto("/");
     await page.getByRole("button", { name: "Sign in with Auth0" }).click();
-    await expect(page.getByRole("alert")).toContainText(scenario.message);
+    await expect(page.locator(".alert.error")).toContainText(scenario.message);
     await expect(page.getByRole("button", { name: /^INC-/ })).toHaveCount(0);
     await expect(page).toHaveURL(
       (url) =>
