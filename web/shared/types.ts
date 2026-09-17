@@ -33,4 +33,20 @@ export type Audit = {
   detail: string;
   created_at: string;
 };
-export type Detail = { ticket: Ticket; audit: Audit[] };
+export type Page<T> = { items: T[]; nextCursor: string | null };
+export type AnalysisSnapshot = {
+  id: number;
+  analysis_id: string;
+  ticket_id: string;
+  incident_version: number;
+  schema_version: number;
+  actor: string;
+  created_at: string;
+  analysis: Analysis;
+  evidence: Analysis["evidence"];
+};
+export type Detail = {
+  ticket: Ticket;
+  audit: Audit[];
+  auditNextCursor?: string | null;
+};
