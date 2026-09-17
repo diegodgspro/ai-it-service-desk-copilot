@@ -1,6 +1,14 @@
 # DeskPilot roadmap
 
-## In development for v1.3.0 — Retrieval Feedback & Observability
+## In development for v1.4.0 - Operational Maturity, delivery A
+
+- Cursor pagination for queue, audit and analyses; immutable analysis snapshots; suppression of feedback samples below five.
+- Additive migration 0006 and local validation only. No remote migration, deployment, merge or release in this delivery.
+- [Architecture, privacy, migration and limits](operational-maturity.md).
+
+## Stable baseline v1.3.0 - Retrieval Feedback & Observability
+
+Tagged commit: `15ac9d538831a4257a9ca5d36b758cef9bcbff57`.
 
 - Structured, append-only human feedback for approved FTS5 evidence and aggregate-only operational metrics.
 - No semantic/hybrid promotion, tuning, online learning, ranking/threshold adjustment, incident policy change or production deployment.
@@ -28,7 +36,7 @@ Validation covers 29 Python tests, 39 Worker/D1 checks, 16 frontend tests, six b
 
 ## Future increments — not delivered
 
-1. Pagination beyond the bounded queue/audit display, historical analysis archival and a retention/export policy protecting audit identities.
+1. Retention/export policy protecting audit and historical-analysis identities; no purge or retention is implemented by delivery A.
 2. Free-quota monitoring, clearer resource-limit errors and recovery rehearsal in an isolated environment.
 3. Accessibility review, broader responsive checks and publication of genuine interface captures after privacy review.
 4. Independent evaluation for ambiguous, negated and multi-issue incidents; measured technician outcomes without presenting scores as root-cause confidence.

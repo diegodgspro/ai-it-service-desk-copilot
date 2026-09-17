@@ -45,3 +45,19 @@ Production: https://deskpilot.diegodgspro.workers.dev
 The earlier Linux limitations above describe the initial Python build. Web browser verification now runs locally in Edge and in CI Chromium: six scenarios cover desktop/mobile workflow and mocked OAuth. Real interface captures are generated in ignored test output, not committed as screenshots. The web suite also has 39 Worker/D1 checks and 16 frontend tests; the Python suite remains 29 tests. TypeScript, production builds and npm audit are release gates. No line-coverage percentage is claimed.
 
 The user accepted production Auth0 login, authenticated reads, a write persisted after reload and logout. Remote D1 has both initial migrations applied and eight expected synthetic incidents. Audit identities remain private. The release rerun passed all 29 Python, 39 Worker/D1, 16 frontend and six Edge browser tests, type checking, clean build and guarded production build; npm audit returned zero vulnerabilities. Public landing/assets returned 200 and unauthenticated API probes returned 401. The final GitHub Release records CI, deployed commit and operational checkpoint. See [release scope](releases/v1.0.0.md).
+
+## v1.4.0 delivery A local validation - 2026-09-17
+
+The branch `feat/operational-maturity-v1.4-a` was validated locally without remote migration or deployment. The supplied stable production baseline remains v1.3.0 at `15ac9d538831a4257a9ca5d36b758cef9bcbff57`.
+
+- Python regression: 29 passed.
+- Worker, D1, retrieval and contract suite: 109 passed; the focused operational suite adds five checks for deterministic membership, cursor abuse, versioned immutable history, representative 0001-0005 upgrade preservation and transactional rollback.
+- React/Vitest: 29 passed.
+- Playwright: 10 passed, including Auth0 mocks, authorization failures, refresh persistence, keyboard focus and 390px layout.
+- TypeScript: passed.
+- Vite production build plus `wrangler deploy --dry-run`: passed; no deployment occurred.
+- npm audit: zero known vulnerabilities across 271 dependencies.
+- Retrieval baseline stayed recall@1 0.9, recall@3 1.0, MRR 0.95, metadata/approval/abstention/repeatability 1.0.
+- `git diff --check`, protected-artifact consistency and changed-file secret scan are final PR gates.
+
+The sample threshold is privacy suppression, not differential privacy or an accuracy metric. Cursor watermarks stabilize collection membership, not mutable ticket fields. No retention, purge, backfill, reingestion, remote database operation or production acceptance was performed.

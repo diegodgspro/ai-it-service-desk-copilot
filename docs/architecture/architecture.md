@@ -50,3 +50,11 @@ Multi-tenancy, enterprise identity governance, real ITSM ticket writes, automate
 # Unreleased retrieval feedback boundary
 
 The React evidence component submits allowlisted enums to the authenticated Worker. The Worker verifies the evidence against the approved D1 corpus and the server-recorded lexical retrieval impression, derives actor and time, and appends an immutable event through migration 0005. Aggregate reads expose no identity or source text. No feedback dependency exists in retrieval ranking, analysis, intake policy, authorization, automation, decision or handover paths.
+
+## v1.4.0 delivery A (unreleased)
+
+Operational collections use keyset pagination with a signed initial high watermark. The queue preserves lexical ticket-ID ordering and excludes later rowids; append-only audit and analysis history use descending integer IDs. HMAC-SHA256 authenticates actor hash, logical collection/incident scope, page size, position, watermark and expiry. Signing material is generated once by migration 0006 inside D1, never exposed through API/logs. No new data binding or external key service is introduced.
+
+A successful analysis transaction is `[optimistic UPDATE, gated snapshot INSERT, gated audit INSERT]`. Each insert follows `changes()=1`; a failed optimistic update creates neither record. Snapshot schema version 1 freezes analysis JSON and runbook evidence (title, repository path and content), with resulting incident version, authenticated actor and server timestamp. Contextual FTS evidence retrieved later is separate and does not generate these analyses. Triggers reject historical UPDATE/DELETE. No legacy actor, time or evidence is invented through backfill.
+
+[Operational limits and privacy](../operational-maturity.md) describe the bounded API, live-field versus member-snapshot semantics and feedback suppression. Existing Auth0, byte limits, safe logs, FTS5/BM25 and simulation boundaries are unchanged.

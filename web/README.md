@@ -1,8 +1,26 @@
 # DeskPilot web workspace
 
-## Retrieval feedback (Unreleased)
+## Operational maturity (v1.4.0 delivery A, unreleased)
 
-`POST /api/knowledge/feedback` requires Auth0/server-side write permission, exact same origin, JSON and a 16 KiB byte limit. `GET /api/knowledge/feedback/summary` also requires server-side write permission and returns only bounded global aggregates; read-only users cannot inspect small-cohort feedback. Migration `0005_knowledge_feedback.sql` is additive and local-only until separately authorized. Retrieval impressions and feedback store identifiers and counts, never raw queries, ticket descriptions or evidence text. See [the full contract](../docs/retrieval-feedback-observability.md).
+Stable baseline: v1.3.0, `15ac9d538831a4257a9ca5d36b758cef9bcbff57`. New migration `0006_operational_maturity.sql` adds analysis history and an internal D1 cursor signing key. Apply only to local test databases in this delivery. No new bindings, external services or package dependencies.
+
+| Endpoint | Response |
+| --- | --- |
+| `GET /api/tickets` | Existing ticket array, default 20, maximum 50; optional `X-Next-Cursor` response header |
+| `GET /api/tickets/page` | `{items: Ticket[], nextCursor: string or null}` |
+| `GET /api/tickets/:id` | Existing `{ticket,audit}` plus `auditNextCursor`; latest 20 audit events |
+| `GET /api/tickets/:id/audit` | `{items: Audit[], nextCursor}` |
+| `GET /api/tickets/:id/analyses` | `{items: AnalysisSnapshot[], nextCursor}` |
+
+Collection endpoints accept only `limit` and `cursor`, once each. Invalid, expired, oversized, changed-scope or tampered cursors return the same sanitized 400. Limits outside 1-50 are rejected. Cursors expire one hour after starting navigation; retry repeats the same page. Start a fresh page to see new inserts. The legacy ticket endpoint and `/tickets/page` share the same logical collection cursor. Detail rejects query parameters. Authentication and server-owned read permissions are checked on every page.
+
+Each successful analysis appends a schema-version-1 snapshot in the existing transactional optimistic write. Its `incident_version` is the resulting ticket version; actor is authenticated and timestamp is D1-generated. Existing records retain their current analysis but have no reconstructed pre-migration history. Queue search and counts refer to loaded incidents; Load more and Refresh queue expose additional/new records. Histories support independent loading, empty, error, retry and keyboard focus states even after the current analysis is invalidated.
+
+See [the complete operations and privacy contract](../docs/operational-maturity.md).
+
+## Retrieval feedback (v1.3.0 foundation)
+
+`POST /api/knowledge/feedback` requires Auth0/server-side write permission, exact same origin, JSON and a 16 KiB byte limit. `GET /api/knowledge/feedback/summary` also requires server-side write permission and returns only bounded global aggregates; read-only users cannot inspect small-cohort feedback. Migration `0005_knowledge_feedback.sql` belongs to the v1.3.0 baseline. This delivery changes summary suppression, not existing feedback records. Below five current valid events, the only response field is `status: "insufficient_sample"`; at five, global aggregates become available without reason/document breakdowns. Retrieval impressions and feedback store identifiers and counts, never raw queries, ticket descriptions or evidence text. See [the full contract](../docs/retrieval-feedback-observability.md).
 
 ## Enterprise retrieval foundation
 
