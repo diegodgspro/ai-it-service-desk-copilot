@@ -9,10 +9,15 @@ export function usePages<T>(api: Api, path: string) {
   const [error, setError] = useState("");
   const generation = useRef(0);
   const pending = useRef(false);
+  const attempted = useRef<{ next: string | null; reset: boolean }>({
+    next: null,
+    reset: true,
+  });
   async function request(next: string | null, reset = false) {
     if (pending.current && !reset) return;
     const current = reset ? ++generation.current : generation.current;
     pending.current = true;
+    attempted.current = { next, reset };
     setBusy(true);
     setError("");
     try {
@@ -51,7 +56,7 @@ export function usePages<T>(api: Api, path: string) {
     error,
     refresh: () => request(null, true),
     more: () => request(cursor),
-    retry: () => request(cursor, items.length === 0),
+    retry: () => request(attempted.current.next, attempted.current.reset),
   };
 }
 export function PageControls({
@@ -74,7 +79,7 @@ export function PageControls({
   return (
     <div className="page-controls">
       <p ref={status} aria-live="polite" tabIndex={-1}>
-        {page.busy ? `Loading ${label}�` : `${label} loaded.`}
+        {page.busy ? `Loading ${label} - ` : `${label} loaded.`}
       </p>
       {page.error && (
         <div ref={alert} role="alert" tabIndex={-1}>
@@ -128,7 +133,7 @@ export function IncidentHistory({ api, id }: { api: Api; id: string }) {
             <p>
               <b>{a.kind}</b> {a.detail}
               <small>
-                {new Date(a.created_at).toLocaleString()} � {a.actor}
+                {new Date(a.created_at).toLocaleString()} - {a.actor}
               </small>
             </p>
           </div>
@@ -149,7 +154,7 @@ export function IncidentHistory({ api, id }: { api: Api; id: string }) {
           <article key={a.id}>
             <h3>Incident version {a.incident_version}</h3>
             <p>
-              {new Date(a.created_at).toLocaleString()} � {a.actor} � Snapshot
+              {new Date(a.created_at).toLocaleString()} - {a.actor} - Snapshot
               schema {a.schema_version}
             </p>
             <p>Working hypothesis: {a.analysis.hypothesis}</p>
@@ -158,7 +163,7 @@ export function IncidentHistory({ api, id }: { api: Api; id: string }) {
               <summary>Recorded evidence</summary>
               {a.evidence.map((e, i) => (
                 <p key={i}>
-                  <b>{e.title}</b> � {e.path}
+                  <b>{e.title}</b> - {e.path}
                 </p>
               ))}
             </details>
