@@ -231,6 +231,33 @@ test("0005 upgrades a populated 0001-0004 database without blocking knowledge re
   } finally { await upgrade.dispose(); await rm(upgradePersist,{recursive:true,force:true}); }
 });
 
+test("summary suppresses identical 0?4 states, rejects all slicing and exposes only global aggregates at five", async () => {
+  const url=origin+"/api/knowledge/feedback/summary";
+  const query={query:"printer queue spooler",filters:{approvalStatus:"approved"}};
+  const baseline=(await request(query)).data.results;
+  for(let count=0;count<5;count++) {
+    for(let retry=0;retry<2;retry++) {
+      const response=await mf.dispatchFetch(url);
+      assert.equal(response.status,200);
+      assert.deepEqual(await response.json(),{status:"insufficient_sample"});
+    }
+    for(const params of ["?limit=1","?cursor=forged","?documentId=kb-hardware-printing","?actor=other","?outcome=helpful"]) {
+      const response=await mf.dispatchFetch(url+params);
+      assert.equal(response.status,400);
+      assert.deepEqual(await response.json(),{error:"Query parameters are not supported."});
+    }
+    const retrieved=await request(query), item=retrieved.data.results[0];
+    assert.equal((await feedback({clientEventId:crypto.randomUUID(),retrievalId:retrieved.data.retrievalId,documentId:item.documentId,chunkId:item.chunkId,citation:item.citation.label,documentVersion:item.metadata.version,documentHash:item.documentHash,outcome:"helpful",reason:count===0?"clear":"actionable"})).status,201);
+  }
+  const summary=await (await mf.dispatchFetch(url)).json();
+  assert.equal(summary.status,"available");
+  assert.equal(summary.evaluatedEvidenceCount,5);
+  assert.equal(summary.helpfulPercent,100);
+  assert.deepEqual(summary.reasons,[]);
+  assert.deepEqual(summary.documents,[]);
+  assert.deepEqual((await request(query)).data.results,baseline,"feedback cannot change retrieval ranking or evidence");
+});
+
 test("feedback is strict, idempotent, append-only and summarized without sensitive data", async () => {
   const retrieval = await request({ query: "printer queue spooler", filters:{approvalStatus:"approved"} });
   const item = retrieval.data.results[0];

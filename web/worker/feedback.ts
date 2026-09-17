@@ -52,17 +52,19 @@ export async function recordFeedback(db: D1Database, actor: string, value: unkno
 
 export async function feedbackSummary(db: D1Database): Promise<FeedbackSummary> {
   const current = "WITH current_feedback AS (SELECT f.* FROM knowledge_feedback f WHERE NOT EXISTS(SELECT 1 FROM knowledge_feedback n WHERE n.supersedes_feedback_id=f.feedback_id))";
-  const totals = await db.prepare(`${current} SELECT COUNT(*) evaluated,SUM(outcome='helpful') helpful FROM current_feedback`).first<{evaluated:number;helpful:number|null}>();
-  const retrieved = await db.prepare("SELECT COALESCE(SUM(result_count),0) count FROM knowledge_retrieval_events").first<{count:number}>();
-  const reasons = await db.prepare(`${current} SELECT reason,COUNT(*) count FROM current_feedback GROUP BY reason ORDER BY count DESC,reason LIMIT 9`).all<{reason: FeedbackSummary["reasons"][number]["reason"];count:number}>();
-  const documents = await db.prepare(`${current} SELECT f.document_id,d.category,COUNT(*) count,ROUND(100.0*SUM(f.outcome='helpful')/COUNT(*),1) helpfulPercent FROM current_feedback f JOIN knowledge_documents d ON d.document_id=f.document_id GROUP BY f.document_id,d.category ORDER BY count DESC,f.document_id LIMIT 10`).all<{document_id:string;category:string;count:number;helpfulPercent:number}>();
-  const evaluated = totals?.evaluated ?? 0, shown = retrieved?.count ?? 0;
+  // One statement observes one D1 snapshot, including concurrent corrections.
+  const totals = await db.prepare(`${current} SELECT COUNT(*) evaluated,SUM(outcome='helpful') helpful,(SELECT COALESCE(SUM(result_count),0) FROM knowledge_retrieval_events) retrieved FROM current_feedback`).first<{evaluated:number;helpful:number|null;retrieved:number}>();
+  const evaluated = totals?.evaluated ?? 0;
+  if (evaluated < 5) return { status: "insufficient_sample" };
+  const shown = totals?.retrieved ?? 0;
   return {
+    status: "available",
     retrievedEvidenceCount: shown,
     evaluatedEvidenceCount: evaluated,
     feedbackCoveragePercent: shown ? Number((100 * evaluated / shown).toFixed(1)) : 0,
-    helpfulPercent: evaluated ? Number((100 * (totals?.helpful ?? 0) / evaluated).toFixed(1)) : null,
-    reasons: reasons.results,
-    documents: documents.results.map((x) => ({ documentId:x.document_id,category:x.category,count:x.count,helpfulPercent:x.helpfulPercent })),
+    helpfulPercent: Number((100 * (totals?.helpful ?? 0) / evaluated).toFixed(1)),
+    // Do not expose small groups or complements reconstructable from global totals.
+    reasons: [],
+    documents: [],
   };
 }
