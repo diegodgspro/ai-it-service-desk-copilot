@@ -2,6 +2,7 @@ export type Api = <T>(
   path: string,
   method?: string,
   body?: unknown,
+  query?: Record<string, string>,
 ) => Promise<T>;
 export class AuthenticationError extends Error {}
 export class PermissionError extends Error {}
@@ -11,6 +12,7 @@ export function createApi(getToken?: () => Promise<string>): Api {
     path: string,
     method = "GET",
     body?: unknown,
+    query?: Record<string, string>,
   ): Promise<T> => {
     // Restrict bearer tokens to this application's API, including on redirects.
     if (!/^\/[a-zA-Z0-9/-]*$/.test(path)) throw new Error("Invalid API path");
@@ -28,13 +30,18 @@ export function createApi(getToken?: () => Promise<string>): Api {
       headers.set("Authorization", `Bearer ${token}`);
     }
     if (body !== undefined) headers.set("Content-Type", "application/json");
-    const response = await fetch("/api" + path, {
-      method,
-      headers,
-      body: body !== undefined ? JSON.stringify(body) : undefined,
-      credentials: "omit",
-      redirect: "error",
-    });
+    const response = await fetch(
+      "/api" +
+        path +
+        (query ? "?" + new URLSearchParams(query).toString() : ""),
+      {
+        method,
+        headers,
+        body: body !== undefined ? JSON.stringify(body) : undefined,
+        credentials: "omit",
+        redirect: "error",
+      },
+    );
     if (response.status === 401)
       throw new AuthenticationError(
         "Your session is not authorized. Sign in again or contact the workspace administrator.",

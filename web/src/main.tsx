@@ -5,10 +5,12 @@ import "./style.css";
 import { AuthRoot, useSession } from "./auth";
 import { Intake } from "./Intake";
 import { KnowledgeEvidence } from "./KnowledgeEvidence";
+import { IncidentHistory, PageControls, usePages } from "./IncidentHistory";
 function App() {
   const { api, displayName, local, logout } = useSession();
-  const [tickets, setTickets] = useState<Ticket[]>([]),
-    [selected, setSelected] = useState("INC-1042"),
+  const queue = usePages<Ticket>(api, "/tickets/page");
+  const { items: tickets, setItems: setTickets } = queue;
+  const [selected, setSelected] = useState("INC-1042"),
     [detail, setDetail] = useState<Detail | null>(null);
   const [draft, setDraft] = useState<Ticket | null>(null),
     [tab, setTab] = useState("Analysis"),
@@ -21,11 +23,8 @@ function App() {
   const [query, setQuery] = useState("");
   const [intakeOpen, setIntakeOpen] = useState(false);
   async function load(id: string) {
-    const [list, record] = await Promise.all([
-      api<Ticket[]>("/tickets"),
-      api<Detail>("/tickets/" + id),
-    ]);
-    setTickets(list);
+    const record = await api<Detail>("/tickets/" + id);
+    setTickets((old) => old.map((t) => (t.id === id ? record.ticket : t)));
     setDetail(record);
     setDraft(record.ticket);
   }
@@ -37,13 +36,12 @@ function App() {
     setRestored(false);
     setStatus("In progress");
     setError("");
-    Promise.all([
-      api<Ticket[]>("/tickets"),
-      api<Detail>("/tickets/" + selected),
-    ])
-      .then(([list, record]) => {
+    api<Detail>("/tickets/" + selected)
+      .then((record) => {
         if (active) {
-          setTickets(list);
+          setTickets((old) =>
+            old.map((t) => (t.id === selected ? record.ticket : t)),
+          );
           setDetail(record);
           setDraft(record.ticket);
         }
@@ -148,12 +146,12 @@ function App() {
           <div>
             <small>IN YOUR QUEUE</small>
             <strong>{tickets.length.toString().padStart(2, "0")}</strong>
-            <span>Authored lab incidents</span>
+            <span>Loaded lab incidents</span>
           </div>
           <div>
             <small>AWAITING RESOLUTION</small>
             <strong>{open.toString().padStart(2, "0")}</strong>
-            <span>Open or under review</span>
+            <span>Among loaded incidents</span>
           </div>
           <div>
             <small>WORKFLOW</small>
@@ -188,6 +186,7 @@ function App() {
             onCreated={(id) => {
               setIntakeOpen(false);
               setSelected(id);
+              void queue.refresh();
               setNotice(`Incident ${id} created after confirmation.`);
             }}
           />
@@ -206,13 +205,14 @@ function App() {
                 + New incident
               </button>
               <label className="search">
-                <span className="sr-only">Search incidents</span>
+                <span className="sr-only">Search loaded incidents</span>
                 <input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Search incident or requester…"
                 />
               </label>
+              <p>Search and counts cover loaded incidents.</p>
               <div className="ticket-list">
                 {tickets
                   .filter((t) =>
@@ -247,8 +247,18 @@ function App() {
                     (t.id + t.title + t.requester)
                       .toLowerCase()
                       .includes(query.toLowerCase()),
-                  ) && <p className="empty">No incidents match.</p>}
+                  ) && <p className="empty">No loaded incidents match.</p>}
               </div>
+              {!queue.busy && !queue.error && !tickets.length && (
+                <p>No incidents yet.</p>
+              )}
+              <PageControls page={queue} label="incidents" />
+              <button
+                disabled={queue.busy}
+                onClick={() => void queue.refresh()}
+              >
+                Refresh incident queue
+              </button>
             </section>
             <section className="case">
               {!draft || !current ? (
@@ -458,7 +468,12 @@ function App() {
                             <KnowledgeEvidence
                               api={api}
                               query={`${current.title} ${current.description} ${analysis.category}`}
-                              context={{incidentId:current.id,incidentVersion:current.version,analysisContextId:current.analysis_id ?? undefined}}
+                              context={{
+                                incidentId: current.id,
+                                incidentVersion: current.version,
+                                analysisContextId:
+                                  current.analysis_id ?? undefined,
+                              }}
                               filters={{
                                 language: "en",
                                 approvalStatus: "approved",
@@ -610,28 +625,11 @@ function App() {
                       </>
                     )}
                   </div>
-                  <details className="history">
-                    <summary>
-                      Incident history{" "}
-                      <span>{detail?.audit.length ?? 0} recent events</span>
-                    </summary>
-                    {detail?.audit.length ? (
-                      detail.audit.map((a) => (
-                        <div key={a.id}>
-                          <span className="history-dot" />
-                          <p>
-                            <b>{a.kind}</b> {a.detail}
-                            <small>
-                              {new Date(a.created_at).toLocaleString()} ·{" "}
-                              {a.actor}
-                            </small>
-                          </p>
-                        </div>
-                      ))
-                    ) : (
-                      <p>No recorded events yet.</p>
-                    )}
-                  </details>
+                  <IncidentHistory
+                    key={`${current.id}-${current.version}`}
+                    api={api}
+                    id={current.id}
+                  />
                 </>
               )}
             </section>
