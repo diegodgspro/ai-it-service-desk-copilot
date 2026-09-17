@@ -145,9 +145,9 @@ export function AuthenticatedSession({ children }: { children: ReactNode }) {
     const request = createApi(() =>
       getAccessTokenSilently({ authorizationParams: { audience: AUDIENCE } }),
     );
-    const api: Api = async (path, method, body) => {
+    const api: Api = async (path, method, body, query) => {
       try {
-        return await request(path, method, body);
+        return await request(path, method, body, query);
       } catch (e) {
         if (e instanceof AuthenticationError) setFailure(e.message);
         throw e;
