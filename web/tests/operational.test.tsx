@@ -87,3 +87,39 @@ it("encodes cursor values while preserving same-origin token confinement", async
   );
   await expect(api("//evil.invalid")).rejects.toThrow("Invalid API path");
 });
+it("restarts expired history pagination from the first page without duplicating snapshots", async () => {
+  let firstPages = 0;
+  const api = vi.fn(
+    async (
+      path: string,
+      _method?: string,
+      _body?: unknown,
+      query?: Record<string, string>,
+    ) => {
+      if (path.endsWith("audit")) return { items: [], nextCursor: null };
+      if (query?.cursor) throw new Error("Invalid pagination request.");
+      firstPages++;
+      return {
+        items: [snapshot(firstPages === 1 ? 1 : 2)],
+        nextCursor: firstPages === 1 ? "expired-cursor" : null,
+      };
+    },
+  );
+  const user = userEvent.setup();
+  render(<IncidentHistory api={api as any} id="INC-1042" />);
+  await user.click(screen.getByText("Analysis history"));
+  expect(await screen.findByText("Incident version 1")).toBeTruthy();
+  await user.click(screen.getByRole("button", { name: "Load more analyses" }));
+  expect((await screen.findByRole("alert")).textContent).toContain(
+    "Invalid pagination request.",
+  );
+  await user.click(screen.getByRole("button", { name: "Refresh analyses" }));
+  expect(await screen.findByText("Incident version 2")).toBeTruthy();
+  expect(screen.queryByText("Incident version 1")).toBeNull();
+  expect(screen.queryByRole("alert")).toBeNull();
+  expect(firstPages).toBe(2);
+  expect(api.mock.calls.at(-1)?.[3]).toBeUndefined();
+  await waitFor(() =>
+    expect(document.activeElement?.textContent).toBe("analyses loaded."),
+  );
+});

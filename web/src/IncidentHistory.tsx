@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import type { Api } from "./api";
-import type { Analysis, Audit } from "../shared/types";
-export type Page<T> = { items: T[]; nextCursor: string | null };
+import type { AnalysisSnapshot, Audit, Page } from "../shared/types";
 export function usePages<T>(api: Api, path: string) {
   const [items, setItems] = useState<T[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
@@ -62,12 +61,14 @@ export function usePages<T>(api: Api, path: string) {
 export function PageControls({
   page,
   label,
+  refresh = false,
 }: {
   page: Pick<
     ReturnType<typeof usePages>,
-    "busy" | "error" | "cursor" | "more" | "retry"
+    "busy" | "error" | "cursor" | "more" | "retry" | "refresh"
   >;
   label: string;
+  refresh?: boolean;
 }) {
   const alert = useRef<HTMLDivElement>(null);
   const status = useRef<HTMLParagraphElement>(null);
@@ -79,7 +80,7 @@ export function PageControls({
   return (
     <div className="page-controls">
       <p ref={status} aria-live="polite" tabIndex={-1}>
-        {page.busy ? `Loading ${label} - ` : `${label} loaded.`}
+        {page.busy ? `Loading ${label}...` : `${label} loaded.`}
       </p>
       {page.error && (
         <div ref={alert} role="alert" tabIndex={-1}>
@@ -93,6 +94,17 @@ export function PageControls({
             Retry {label}
           </button>
         </div>
+      )}
+      {refresh && (
+        <button
+          disabled={page.busy}
+          onClick={() => {
+            interacted.current = true;
+            void page.refresh();
+          }}
+        >
+          Refresh {label}
+        </button>
       )}
       {page.cursor && !page.error && (
         <button
@@ -108,19 +120,9 @@ export function PageControls({
     </div>
   );
 }
-type Snapshot = {
-  id: number;
-  analysis_id: string;
-  incident_version: number;
-  schema_version: number;
-  actor: string;
-  created_at: string;
-  analysis: Analysis;
-  evidence: Analysis["evidence"];
-};
 export function IncidentHistory({ api, id }: { api: Api; id: string }) {
   const audit = usePages<Audit>(api, `/tickets/${id}/audit`);
-  const analyses = usePages<Snapshot>(api, `/tickets/${id}/analyses`);
+  const analyses = usePages<AnalysisSnapshot>(api, `/tickets/${id}/analyses`);
   return (
     <>
       <details className="history">
@@ -138,7 +140,7 @@ export function IncidentHistory({ api, id }: { api: Api; id: string }) {
             </p>
           </div>
         ))}
-        <PageControls page={audit} label="audit events" />
+        <PageControls page={audit} label="audit events" refresh />
       </details>
       <details className="history">
         <summary>Analysis history</summary>
@@ -169,7 +171,7 @@ export function IncidentHistory({ api, id }: { api: Api; id: string }) {
             </details>
           </article>
         ))}
-        <PageControls page={analyses} label="analyses" />
+        <PageControls page={analyses} label="analyses" refresh />
       </details>
     </>
   );
