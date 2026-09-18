@@ -19,7 +19,7 @@ export function KnowledgeEvidence({
     [retrievalId, setRetrievalId] = useState(""), [summary, setSummary] = useState<FeedbackSummary | null>(null),
     [error, setError] = useState("");
   const refreshSummary = () => api<FeedbackSummary>("/knowledge/feedback/summary").then((x) => {
-    if (x && Array.isArray(x.reasons) && Array.isArray(x.documents)) setSummary(x);
+    if (x && (x.status === "insufficient_sample" || (x.status === "available" && Array.isArray(x.reasons) && Array.isArray(x.documents)))) setSummary(x);
   }).catch(() => {});
   useEffect(() => {
     let live = true;
@@ -102,9 +102,11 @@ export function KnowledgeEvidence({
       )}
       {summary && <aside className="retrieval-quality" aria-labelledby="retrieval-quality-title">
         <h4 id="retrieval-quality-title">Retrieval quality</h4>
+        {summary.status === "insufficient_sample" ? <p>Insufficient sample. Aggregates require at least five valid feedback events.</p> : <>
         <p><strong>{summary.evaluatedEvidenceCount}</strong> evaluated · <strong>{summary.feedbackCoveragePercent}%</strong> feedback coverage · <strong>{summary.helpfulPercent === null ? "—" : `${summary.helpfulPercent}%`}</strong> helpful</p>
         {summary.reasons.length>0&&<p>Reasons: {summary.reasons.map(x=>`${x.reason.replaceAll("_"," ")} (${x.count})`).join(" · ")}</p>}
         {summary.documents.length>0&&<p>Top evidence: {summary.documents.map(x=>`${x.documentId} / ${x.category} (${x.count})`).join(" · ")}</p>}
+        </>}
         <p className="muted">Aggregated human lab feedback, not accuracy or ground truth.</p>
       </aside>}
     </section>

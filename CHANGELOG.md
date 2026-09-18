@@ -2,7 +2,20 @@
 
 All notable changes follow [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The web package uses semantic versioning.
 
-## [Unreleased]
+## [Unreleased] - v1.4.0 Operational Maturity, delivery A
+
+### Added
+
+- Signed, actor-bound cursor pagination (20 default, 50 maximum, one-hour expiry) for queue, audit and analysis history, with accessible loading/retry/refresh controls.
+- Additive migration `0006_operational_maturity.sql`: immutable versioned analysis snapshots committed atomically with incident updates and audit, plus D1-only cursor signing material. Legacy analyses remain current without fabricated history.
+- Worker/D1 clean-install and upgrade checks, concurrent navigation/writes, cursor abuse, Auth0 isolation, browser refresh and 390px keyboard coverage.
+
+### Security
+
+- Identical `insufficient_sample` summary for 0-4 current valid feedback events; global-only aggregates from five, without small subgroup breakdowns or individual feedback.
+- No production deployment, remote migration, dependency change, retrieval tuning, retention or purge. Stable v1.3.0 remains at `15ac9d538831a4257a9ca5d36b758cef9bcbff57`.
+
+## [1.3.0]
 
 ### Added
 

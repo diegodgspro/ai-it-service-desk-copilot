@@ -1,6 +1,6 @@
-# Retrieval Feedback & Observability (future v1.3.0)
+# Retrieval Feedback & Observability
 
-Status: implemented on a feature branch for review; not deployed. v1.2.0 remains the latest stable release and production remains unchanged.
+Status: v1.4.0 Operational Maturity changes are implemented on a feature branch for review; not deployed. v1.3.0 remains the stable release and production remains unchanged.
 
 ## Architecture and contract
 
@@ -8,7 +8,11 @@ Status: implemented on a feature branch for review; not deployed. v1.2.0 remains
 
 `POST /api/knowledge/feedback` requires Auth0, server-side `write`, exact same origin, JSON and at most 16 KiB measured as UTF-8 bytes. The body contains a client event ID, retrieval/document/chunk IDs, stable citation, document version/hash, one outcome (`helpful` or `not_helpful`), its compatible structured reason and an optional event being corrected. Unknown fields—including actor, subject, email, permissions and timestamps—are rejected. The Worker verifies that the same authenticated actor received the evidence, the document/chunk pair remains approved, and the citation/version/hash match D1. Identity and time are server-derived. Retries are idempotent; corrections append and link a new event.
 
-`GET /api/knowledge/feedback/summary` requires the existing server-side `write` permission because global operational aggregates may disclose a small cohort to read-only users. It accepts no query parameters and returns only aggregate counts, feedback coverage, helpful percentage, structured-reason distribution and at most ten document/category groups. Superseded events do not count as current assessments. It never returns Auth0 subject, email, permission maps, raw query, ticket description, evidence text or tokens.
+`GET /api/knowledge/feedback/summary` requires the existing server-side `write` permission. It rejects every query parameter, including filters, cursors and limits, with the same generic validation response. Fewer than five current valid assessments returns exactly `{"status":"insufficient_sample"}`: no count, coverage, retrieved count, percentage, groups or individual data. Zero through four events produce the same response on repeated requests. Superseded events are excluded; corrections do not increase the current sample. A single SQL statement captures counts and coverage against one consistent D1 snapshot.
+
+At five or more assessments the response is `status: "available"` plus global `retrievedEvidenceCount`, `evaluatedEvidenceCount`, `feedbackCoveragePercent` and `helpfulPercent`. Legacy `reasons` and `documents` arrays remain empty: subgroups and their complements could otherwise disclose smaller cohorts even when the global sample is large. No summary pagination or client-selected cohort exists. Clients must branch on `status` before reading metrics. The UI explicitly explains suppression and labels these metrics as human lab feedback, not accuracy or ground truth. Individual events, identity, Auth0 subject, email, permission maps, query, ticket description, evidence text and tokens are never returned.
+
+The threshold protects small global samples and removes slicing/retry message differences. It is not differential privacy: longitudinal observations after the sample reaches five can reveal aggregate changes, and events are not guaranteed to represent five distinct people. No stronger anonymity claim is made.
 
 Migration `0005_knowledge_feedback.sql` is additive, preserves migrations 0001–0004, uses foreign keys, checks, narrowly justified indexes and triggers that reject updates/deletes. It has not been applied remotely. Any destructive expiry or purge policy requires separate authorization.
 

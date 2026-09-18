@@ -2,12 +2,17 @@ import { authorize, isLocalDevelopment, type AuthConfig } from "./auth";
 import { analyze } from "./analysis";
 import { generateIntake } from "./intake";
 import { validateIntakeDraft, type IntakeDraft } from "../shared/intake";
-import type { Ticket } from "../shared/types";
+import { InvalidPage, pageState, pageResult } from "./pagination";
+import type { Audit, Ticket } from "../shared/types";
 import { validateRetrievalQuery } from "../shared/knowledge";
 import { D1FtsRetriever } from "./retrieval";
 import { digest, feedbackSummary, recordFeedback } from "./feedback";
 import { logSafeEvent } from "./observability";
-import { feedbackOutcomes, helpfulReasons, notHelpfulReasons } from "../shared/feedback";
+import {
+  feedbackOutcomes,
+  helpfulReasons,
+  notHelpfulReasons,
+} from "../shared/feedback";
 interface Env extends AuthConfig {
   DB: D1Database;
   ASSETS: Fetcher;
@@ -38,18 +43,27 @@ const parseBody = async (request: Request) => {
   const declared = Number(request.headers.get("content-length"));
   if (Number.isFinite(declared) && declared > 16384)
     return { error: json({ error: "Request too large" }, 413) };
-  const reader = request.body?.getReader(), chunks: Uint8Array[] = [];
+  const reader = request.body?.getReader(),
+    chunks: Uint8Array[] = [];
   let size = 0;
-  if (reader) for (;;) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    size += value.byteLength;
-    if (size > 16384) { await reader.cancel(); return { error: json({ error: "Request too large" }, 413) }; }
-    chunks.push(value);
-  }
+  if (reader)
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      size += value.byteLength;
+      if (size > 16384) {
+        await reader.cancel();
+        return { error: json({ error: "Request too large" }, 413) };
+      }
+      chunks.push(value);
+    }
   try {
-    const bytes = new Uint8Array(size); let offset = 0;
-    for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
+    const bytes = new Uint8Array(size);
+    let offset = 0;
+    for (const chunk of chunks) {
+      bytes.set(chunk, offset);
+      offset += chunk.byteLength;
+    }
     const raw = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
     const body: unknown = JSON.parse(raw);
     if (!body || Array.isArray(body) || typeof body !== "object") throw Error();
@@ -61,7 +75,8 @@ const parseBody = async (request: Request) => {
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
-    const requestId = crypto.randomUUID(), started = Date.now();
+    const requestId = crypto.randomUUID(),
+      started = Date.now();
     if (url.pathname === "/auth/local" && request.method === "GET")
       return json({ enabled: isLocalDevelopment(request, env) });
     // The public SPA shell contains no ticket data and must load before login.
@@ -100,11 +115,32 @@ export default {
         )
           return json({ error: "JSON required" }, 415);
       }
-      if (url.pathname === "/api/tickets" && request.method === "GET") {
+      if (
+        ["/api/tickets", "/api/tickets/page"].includes(url.pathname) &&
+        request.method === "GET"
+      ) {
+        const state = await pageState(
+          env.DB,
+          url,
+          actor,
+          "tickets",
+          "SELECT COALESCE(MAX(rowid),0) high FROM tickets",
+        );
         const rows = await env.DB.prepare(
-          "SELECT * FROM tickets ORDER BY id LIMIT 100",
-        ).all<Row>();
-        return json(rows.results.map(ticket));
+          "SELECT * FROM tickets WHERE rowid<=? AND id>? ORDER BY id LIMIT ?",
+        )
+          .bind(state.high, state.last, state.limit + 1)
+          .all<Row>();
+        const page = await pageResult(
+          state,
+          rows.results.map(ticket),
+          (row) => row.id,
+        );
+        if (url.pathname.endsWith("/page")) return json(page);
+        const response = json(page.items);
+        if (page.nextCursor)
+          response.headers.set("X-Next-Cursor", page.nextCursor);
+        return response;
       }
       if (
         url.pathname === "/api/knowledge/retrieve" &&
@@ -117,21 +153,54 @@ export default {
             { error: "The retrieval query or filters are invalid." },
             400,
           );
-        const context = parsed.body.context as import("../shared/feedback").RetrievalContext | undefined;
+        const context = parsed.body.context as
+          import("../shared/feedback").RetrievalContext | undefined;
         if (context?.incidentId) {
-          const current = await env.DB.prepare("SELECT version,analysis_id FROM tickets WHERE id=?").bind(context.incidentId).first<{version:number;analysis_id:string|null}>();
-          if (!current || current.version !== context.incidentVersion || (context.analysisContextId !== undefined && current.analysis_id !== context.analysisContextId))
+          const current = await env.DB.prepare(
+            "SELECT version,analysis_id FROM tickets WHERE id=?",
+          )
+            .bind(context.incidentId)
+            .first<{ version: number; analysis_id: string | null }>();
+          if (
+            !current ||
+            current.version !== context.incidentVersion ||
+            (context.analysisContextId !== undefined &&
+              current.analysis_id !== context.analysisContextId)
+          )
             return json({ error: "The retrieval context is invalid." }, 400);
         }
         const results = await new D1FtsRetriever(env.DB).retrieve(parsed.body);
-        const retrievalId = crypto.randomUUID(), actorHash = await digest(actor);
+        const retrievalId = crypto.randomUUID(),
+          actorHash = await digest(actor);
         const filterCount = Object.keys(parsed.body.filters ?? {}).length;
         await env.DB.batch([
-          env.DB.prepare("INSERT INTO knowledge_retrieval_events(retrieval_id,actor_hash,incident_id,incident_version,analysis_context_id,retrieval_mode,result_count,filter_count,abstained) VALUES(?,?,?,?,?,'lexical',?,?,?)")
-            .bind(retrievalId,actorHash,context?.incidentId ?? null,context?.incidentVersion ?? null,context?.analysisContextId ?? null,results.length,filterCount,results.length === 0 ? 1 : 0),
-          ...results.map((r) => env.DB.prepare("INSERT INTO knowledge_retrieval_items(retrieval_id,document_id,chunk_id) VALUES(?,?,?)").bind(retrievalId,r.documentId,r.chunkId)),
+          env.DB.prepare(
+            "INSERT INTO knowledge_retrieval_events(retrieval_id,actor_hash,incident_id,incident_version,analysis_context_id,retrieval_mode,result_count,filter_count,abstained) VALUES(?,?,?,?,?,'lexical',?,?,?)",
+          ).bind(
+            retrievalId,
+            actorHash,
+            context?.incidentId ?? null,
+            context?.incidentVersion ?? null,
+            context?.analysisContextId ?? null,
+            results.length,
+            filterCount,
+            results.length === 0 ? 1 : 0,
+          ),
+          ...results.map((r) =>
+            env.DB.prepare(
+              "INSERT INTO knowledge_retrieval_items(retrieval_id,document_id,chunk_id) VALUES(?,?,?)",
+            ).bind(retrievalId, r.documentId, r.chunkId),
+          ),
         ]);
-        logSafeEvent({ requestId, route:url.pathname, status:200, durationMs:Date.now()-started, resultCount:results.length, abstention:results.length===0, filterCount });
+        logSafeEvent({
+          requestId,
+          route: url.pathname,
+          status: 200,
+          durationMs: Date.now() - started,
+          resultCount: results.length,
+          abstention: results.length === 0,
+          filterCount,
+        });
         return json({
           results,
           retrievalId,
@@ -139,20 +208,46 @@ export default {
           method: "D1 FTS5 lexical retrieval",
         });
       }
-      if (url.pathname === "/api/knowledge/feedback" && request.method === "POST") {
+      if (
+        url.pathname === "/api/knowledge/feedback" &&
+        request.method === "POST"
+      ) {
         const parsed = await parseBody(request);
         if (parsed.error) return parsed.error;
         const result = await recordFeedback(env.DB, actor, parsed.body);
-        const safeOutcome = feedbackOutcomes.find((x)=>x===parsed.body?.outcome);
-        const safeReason = [...helpfulReasons,...notHelpfulReasons].find((x)=>x===parsed.body?.reason);
-        logSafeEvent({ requestId, route:url.pathname, status:result.status, durationMs:Date.now()-started, ...(safeOutcome ? { outcome:safeOutcome } : {}), ...(safeReason ? { reason:safeReason } : {}) });
-        return "receipt" in result ? json(result.receipt,result.status) : json({error:result.error},result.status);
+        const safeOutcome = feedbackOutcomes.find(
+          (x) => x === parsed.body?.outcome,
+        );
+        const safeReason = [...helpfulReasons, ...notHelpfulReasons].find(
+          (x) => x === parsed.body?.reason,
+        );
+        logSafeEvent({
+          requestId,
+          route: url.pathname,
+          status: result.status,
+          durationMs: Date.now() - started,
+          ...(safeOutcome ? { outcome: safeOutcome } : {}),
+          ...(safeReason ? { reason: safeReason } : {}),
+        });
+        return "receipt" in result
+          ? json(result.receipt, result.status)
+          : json({ error: result.error }, result.status);
       }
-      if (url.pathname === "/api/knowledge/feedback/summary" && request.method === "GET") {
-        if (!identity.permissions.includes("write")) return json({error:"Write permission required"},403);
-        if (url.search) return json({error:"Query parameters are not supported."},400);
+      if (
+        url.pathname === "/api/knowledge/feedback/summary" &&
+        request.method === "GET"
+      ) {
+        if (!identity.permissions.includes("write"))
+          return json({ error: "Write permission required" }, 403);
+        if (url.search)
+          return json({ error: "Query parameters are not supported." }, 400);
         const summary = await feedbackSummary(env.DB);
-        logSafeEvent({requestId,route:url.pathname,status:200,durationMs:Date.now()-started});
+        logSafeEvent({
+          requestId,
+          route: url.pathname,
+          status: 200,
+          durationMs: Date.now() - started,
+        });
         return json(summary);
       }
       if (url.pathname === "/api/intake/draft" && request.method === "POST") {
@@ -240,7 +335,7 @@ export default {
         );
       }
       const match = url.pathname.match(
-        /^\/api\/tickets\/(INC-\d+)(?:\/(analyze|decision|handover))?$/,
+        /^\/api\/tickets\/(INC-\d+)(?:\/(analyze|decision|handover|audit|analyses))?$/,
       );
       if (!match) return json({ error: "Not found" }, 404);
       const [, id, operation] = match;
@@ -248,14 +343,51 @@ export default {
         .bind(id)
         .first<Row>();
       if (!row) return json({ error: "Ticket not found" }, 404);
-      if (request.method === "GET" && !operation) {
-        const audit = await env.DB.prepare(
-          "SELECT * FROM audit WHERE ticket_id=? ORDER BY id DESC LIMIT 100",
+      if (
+        request.method === "GET" &&
+        (!operation || operation === "audit" || operation === "analyses")
+      ) {
+        if (!operation && url.search) throw new InvalidPage();
+        const history = operation === "analyses";
+        const table = history ? "analysis_history" : "audit";
+        const state = await pageState(
+          env.DB,
+          url,
+          actor,
+          `${id}/${history ? "analyses" : "audit"}`,
+          `SELECT COALESCE(MAX(id),0) high FROM ${table} WHERE ticket_id=?`,
+          [id],
+        );
+        const rows = await env.DB.prepare(
+          `SELECT * FROM ${table} WHERE ticket_id=? AND id<=? AND id<? ORDER BY id DESC LIMIT ?`,
         )
-          .bind(id)
-          .all();
-        return json({ ticket: ticket(row), audit: audit.results });
+          .bind(id, state.high, state.last, state.limit + 1)
+          .all<Audit & { analysis_json: string; evidence_json: string }>();
+        const page = await pageResult(state, rows.results, (row) => row.id);
+        if (history)
+          return json({
+            ...page,
+            items: page.items.map(
+              ({ analysis_json, evidence_json, ...fields }) => ({
+                ...fields,
+                analysis: JSON.parse(analysis_json),
+                evidence: JSON.parse(evidence_json),
+              }),
+            ),
+          });
+        if (operation === "audit") return json(page);
+        return json({
+          ticket: ticket(row),
+          audit: page.items,
+          auditNextCursor: page.nextCursor,
+        });
       }
+      if (
+        request.method === "GET" ||
+        operation === "audit" ||
+        operation === "analyses"
+      )
+        return json({ error: "Method not allowed" }, 405);
       const parsed = await parseBody(request);
       if (parsed.error) return parsed.error;
       const body = parsed.body!;
@@ -265,6 +397,7 @@ export default {
           409,
         );
       let statement: D1PreparedStatement;
+      let snapshot: D1PreparedStatement | undefined;
       let kind: string, detail: string;
       if (request.method === "PATCH" && !operation) {
         if (
@@ -311,6 +444,16 @@ export default {
         statement = env.DB.prepare(
           "UPDATE tickets SET analysis=?,analysis_id=?,decision=NULL,version=version+1 WHERE id=? AND version=?",
         ).bind(JSON.stringify(result), analysisId, id, row.version);
+        snapshot = env.DB.prepare(
+          "INSERT INTO analysis_history(analysis_id,ticket_id,incident_version,actor,analysis_json,evidence_json) SELECT ?,?,?,?,?,? WHERE changes()=1",
+        ).bind(
+          analysisId,
+          id,
+          row.version + 1,
+          actor,
+          JSON.stringify(result),
+          JSON.stringify(result.evidence),
+        );
         kind = "analyzed";
         detail =
           "Runbook analysis " +
@@ -369,6 +512,7 @@ export default {
       // D1 batch is transactional. changes() gates the audit insert on the optimistic update.
       const results = await env.DB.batch([
         statement,
+        ...(snapshot ? [snapshot] : []),
         env.DB.prepare(
           "INSERT INTO audit(ticket_id,kind,actor,detail) SELECT ?,?,?,? WHERE changes()=1",
         ).bind(id, kind, actor, detail),
@@ -379,8 +523,15 @@ export default {
           409,
         );
       return json({ ok: true });
-    } catch {
-      logSafeEvent({requestId,route:url.pathname,status:500,durationMs:Date.now()-started});
+    } catch (error) {
+      if (error instanceof InvalidPage)
+        return json({ error: "Invalid pagination request." }, 400);
+      logSafeEvent({
+        requestId,
+        route: url.pathname,
+        status: 500,
+        durationMs: Date.now() - started,
+      });
       return json(
         {
           error: "The request could not be completed. Retry safely.",

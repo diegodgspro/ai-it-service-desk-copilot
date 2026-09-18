@@ -33,7 +33,7 @@ const result = {
   },
   documentHash: "a".repeat(64),
 };
-const emptySummary = {retrievedEvidenceCount:1,evaluatedEvidenceCount:0,feedbackCoveragePercent:0,helpfulPercent:null,reasons:[],documents:[]};
+const emptySummary = {status:"insufficient_sample"};
 afterEach(cleanup);
 describe("knowledge evidence", () => {
   it("renders an accessible expandable citation without interpreting evidence", async () => {
@@ -49,6 +49,18 @@ describe("knowledge evidence", () => {
       result.citation.label,
     );
     expect(screen.getByText(/not a confirmed diagnosis/)).toBeTruthy();
+  });
+  it("explains suppressed human lab feedback without exposing a count", async () => {
+    render(<KnowledgeEvidence api={vi.fn(async(path:string)=>path.endsWith("summary") ? emptySummary : {results:[result],retrievalId:"r"})} query="printer"/>);
+    expect(await screen.findByText(/Insufficient sample/)).toBeTruthy();
+    expect(screen.getByText(/not accuracy or ground truth/)).toBeTruthy();
+    expect(screen.queryByText(/evaluated/)).toBeNull();
+  });
+  it("shows available global aggregates", async () => {
+    const summary={status:"available",retrievedEvidenceCount:10,evaluatedEvidenceCount:5,feedbackCoveragePercent:50,helpfulPercent:80,reasons:[],documents:[]};
+    render(<KnowledgeEvidence api={vi.fn(async(path:string)=>path.endsWith("summary") ? summary : {results:[result],retrievalId:"r"})} query="printer"/>);
+    expect(await screen.findByText("80%")).toBeTruthy();
+    expect(screen.queryByText(/Insufficient sample/)).toBeNull();
   });
   it("shows the explicit no-results state", async () => {
     render(

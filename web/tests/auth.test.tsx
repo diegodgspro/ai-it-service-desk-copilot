@@ -55,7 +55,13 @@ function Workspace() {
       <h1>Private workspace</h1>
       <p>{session.displayName}</p>
       <button onClick={session.logout}>Sign out</button>
-      <button onClick={() => void session.api("/tickets").catch(() => {})}>
+      <button
+        onClick={() =>
+          void session
+            .api("/tickets", "GET", undefined, { cursor: "opaque-cursor" })
+            .catch(() => {})
+        }
+      >
         Load tickets
       </button>
     </>
@@ -197,6 +203,9 @@ describe("Auth0 session UI", () => {
       </AuthenticatedSession>,
     );
     await userEvent.click(screen.getByRole("button", { name: "Load tickets" }));
+    expect(vi.mocked(fetch).mock.calls[0][0]).toBe(
+      "/api/tickets?cursor=opaque-cursor",
+    );
     expect(sdk.state.getAccessTokenSilently).toHaveBeenCalledWith({
       authorizationParams: { audience: "https://deskpilot-api" },
     });

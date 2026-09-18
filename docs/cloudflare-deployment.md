@@ -190,3 +190,11 @@ The following manual checklist is retained for future releases; the user complet
 Before deploying merged main, record a UTC timestamp and retrieve `npx wrangler d1 time-travel info DB --json`. Store the bookmark privately outside Git; publish only retrieval status and timestamp. This read-only operation does not restore data or enable a paid feature. Record the new deployment/version IDs and traffic allocation in the GitHub Release after verification.
 
 `web/wrangler.json` is strict JSON and has no comments. Its production flags deliberately disable local identity and preview URLs; its DB binding targets the existing remote D1 database. Local commands explicitly use local D1. Do not add a paid service binding or change the production origin.
+
+## v1.4.0 delivery A: local-only migration and recovery
+
+Production stays at supplied stable v1.3.0 commit `15ac9d538831a4257a9ca5d36b758cef9bcbff57`. This delivery must not execute the remote migration/deployment procedures elsewhere in this runbook. Only `0006_operational_maturity.sql` is new; migrations 0001?0005 and generated seed/knowledge artifacts remain unchanged.
+
+Use the isolated Worker/D1 tests (`node --test tests/operational.test.mjs` from `web`) to verify clean installation, representative upgrade preservation, immutable history and restart behavior. For a local development database, the existing `npm run db:migrate` explicitly uses `--local`. Do not run retention, deletion or reingestion as part of 0006. Before any separately authorized future rollout, retain a recoverable database backup and apply 0006 before serving the new Worker. Old Worker code can run against the additive schema, but analyses generated while rolled back will not create snapshots; document that gap, never fabricate history.
+
+Keep the internal `pagination_key` table private along with database backups. Key replacement invalidates all cursors; returning to the first page recovers navigation. No rotation command or remote maintenance is executed here. Rowid-changing maintenance also requires invalidating cursors. Monitor append-only D1 storage and read/write usage within Free quotas; no automatic upgrade, paid fallback or unbounded export endpoint is added. See [operational privacy and limits](operational-maturity.md).

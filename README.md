@@ -1,8 +1,14 @@
 # DeskPilot
 
-## Unreleased — Retrieval Feedback & Observability foundation
+## In development - v1.4.0 Operational Maturity, delivery A
 
-Authenticated technicians can record structured feedback on approved lexical evidence. The implementation is not deployed: production and the latest stable release remain v1.2.0. Feedback is an imperfect human laboratory signal, never accuracy or ground truth, and has no path to ranking, thresholds, incident policy, automation or online learning. See [the design and limits](docs/retrieval-feedback-observability.md).
+The stable production baseline is **v1.3.0**, tagged at `15ac9d538831a4257a9ca5d36b758cef9bcbff57`. This branch adds signed cursor pagination, append-only analysis snapshots and suppression of feedback aggregates below five current valid events. It does not deploy or apply remote migrations. D1 FTS5/BM25 remains the only production retrieval; feedback never changes analysis, priority, ranking, thresholds or automation. Workers Free and D1 Free remain the resource boundary.
+
+See [operational contracts, migration and privacy](docs/operational-maturity.md) and [feedback limits](docs/retrieval-feedback-observability.md).
+
+## v1.3.0 - Retrieval Feedback & Observability
+
+Authenticated technicians record structured feedback on approved lexical evidence, with append-only records, idempotency and aggregate-only summaries. Feedback is human laboratory opinion, never accuracy or ground truth.
 
 ## v1.2.0 — Enterprise RAG Foundation
 
@@ -18,9 +24,9 @@ Authenticated users can describe a synthetic IT problem, review a deterministic 
 
 > **Synthetic data only · Simulated automation.** The login page is public; the workspace requires an authorized Auth0 account. This is a personal portfolio, not an enterprise ITSM service.
 
-## Production status — v1.2.0
+## Production baseline - v1.3.0
 
-Cloudflare Worker, remote D1 and Auth0 operate together. Production acceptance on September 13, 2026 confirmed login, all nine existing incidents, VPN and printer evidence, abstention for an irrelevant query, intake, audit, persistence across refresh and logout/login. Migration `0004_enterprise_knowledge_fts.sql` and deterministic ingestion provide 10 approved synthetic documents and 46 stable chunks without changing existing workflows. Cloudflare Access is intentionally not used. Workers Free, D1 Free and Auth0 Free are the cost boundary; no paid fallback is authorized.
+The supplied stable baseline is v1.3.0 at `15ac9d538831a4257a9ca5d36b758cef9bcbff57`; this delivery does not change it. Cloudflare Worker, remote D1 and Auth0 operate together. Earlier v1.2.0 production acceptance on September 13, 2026 confirmed login, all nine existing incidents, VPN and printer evidence, abstention for an irrelevant query, intake, audit, persistence across refresh and logout/login. Migration `0004_enterprise_knowledge_fts.sql` and deterministic ingestion provide 10 approved synthetic documents and 46 stable chunks without changing existing workflows. Cloudflare Access is intentionally not used. Workers Free, D1 Free and Auth0 Free are the cost boundary; no paid fallback is authorized.
 
 See the [v1.2.0 release record](docs/releases/v1.2.0.md), [changelog](CHANGELOG.md) and [deployment and recovery runbook](docs/cloudflare-deployment.md).
 

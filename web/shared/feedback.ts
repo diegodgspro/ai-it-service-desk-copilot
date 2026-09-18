@@ -34,7 +34,8 @@ export type KnowledgeFeedbackReceipt = {
   createdAt: string;
   duplicate: boolean;
 };
-export type FeedbackSummary = {
+export type FeedbackSummary = { status: "insufficient_sample" } | {
+  status: "available";
   retrievedEvidenceCount: number;
   evaluatedEvidenceCount: number;
   feedbackCoveragePercent: number;
