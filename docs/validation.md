@@ -61,3 +61,6 @@ The branch `feat/operational-maturity-v1.4-a` was validated locally without remo
 - `git diff --check`, protected-artifact consistency and changed-file secret scan are final PR gates.
 
 The sample threshold is privacy suppression, not differential privacy or an accuracy metric. Cursor watermarks stabilize collection membership, not mutable ticket fields. No retention, purge, backfill, reingestion, remote database operation or production acceptance was performed.
+## v1.4.0 delivery B
+
+Validation covers strict export rejection, hostile origin, bounded capacity output, two independent synthetic D1 recovery runs, 46 reconstructed FTS rows, logical references and append-only triggers. Semantic/hybrid frozen artifacts remain unchanged; production acceptance is out of scope.

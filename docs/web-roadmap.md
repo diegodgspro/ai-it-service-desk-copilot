@@ -36,8 +36,8 @@ Validation covers 29 Python tests, 39 Worker/D1 checks, 16 frontend tests, six b
 
 ## Future increments — not delivered
 
-1. Retention/export policy protecting audit and historical-analysis identities; no purge or retention is implemented by delivery A.
-2. Free-quota monitoring, clearer resource-limit errors and recovery rehearsal in an isolated environment.
+1. Separately authorized destructive retention; delivery B defines policy and private export but performs no purge.
+2. Production rollout of local/CI-only quota signals and recovery rehearsal, only after explicit release authorization.
 3. Accessibility review, broader responsive checks and publication of genuine interface captures after privacy review.
 4. Independent evaluation for ambiguous, negated and multi-issue incidents; measured technician outcomes without presenting scores as root-cause confidence.
 5. A separately isolated public read-only recruiter demo, with fixed synthetic records and no writes or live AI calls.

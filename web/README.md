@@ -93,7 +93,7 @@ The API exposes `GET /api/tickets`, `GET/PATCH /api/tickets/:id` and `POST /api/
 
 Ticket detail changes reopen the ticket and invalidate its analysis/approval. Reanalysis also invalidates the prior decision. Approval/rejection is single-use per analysis. A transactional batch couples each successful version update with an append-only audit event, preventing duplicate decisions during concurrent requests. Resolution requires a current analysis, a bounded technician note and the boolean `restored: true`. No commands run; nothing is sent to users or ITSM services.
 
-The current analysis persists on each ticket. Previous analysis identifiers remain in the audit; old analysis bodies are not retained as a historical archive. The panel shows the latest 100 audit events per ticket; all events remain in D1. The queue is bounded to 100 records, sufficient for the eight-fixture lab. Production pagination, archival retention and export are future work.
+The current analysis and append-only versioned analysis history persist. Queue, audit and analysis collections use bounded cursor pagination. Delivery B adds a write-authorized, same-origin, allowlisted private export and retention policy without deleting or rewriting anything; see [recovery and retention](../docs/recovery-retention.md).
 
 ## Local persistence and reset
 

@@ -30,7 +30,7 @@ The write-authorized feedback summary returns exactly `{"status":"insufficient_s
 
 These are human laboratory opinions, not accuracy or ground truth. Five events do not mean five distinct people. The threshold does not provide differential privacy against temporal comparison after publication; no claim of anonymity is made. An observer cannot distinguish 0–4 from response fields/messages, but this is not a constant-time service. Feedback is isolated from ranking, threshold, analysis, priority and automation.
 
-Analysis history includes authenticated actor identifiers and synthetic incident/runbook content. Read grants authorize access to the shared laboratory workspace, as with existing audit; there is no new per-ticket tenancy contract. Do not put tokens or real personal data in synthetic tickets or publish database backups, private identities, cursor signing material or raw audit/history exports. No retention, purge, reingestion or export policy is implemented.
+Analysis history includes authenticated actor identifiers and synthetic incident/runbook content. Read grants authorize access to the shared laboratory workspace, as with existing audit; there is no new per-ticket tenancy contract. Do not put tokens or real personal data in synthetic tickets or publish database backups, private identities, cursor signing material or raw audit/history exports. Delivery B documents private export and retention; no purge, deletion or reingestion is implemented.
 
 D1 remains the sole data binding. Each analysis adds one history write plus its index maintenance; each page uses bounded indexed reads and a small key lookup. Append-only storage still grows over time. Workers Free and D1 Free are preserved; operators must monitor quota consumption and explicitly plan capacity/recovery before a separately authorized rollout. No paid fallback, new account, billing change or remote action is part of this delivery.
 
@@ -39,3 +39,6 @@ D1 remains the sole data binding. Each analysis adds one history write plus its 
 Worker/D1 tests cover clean install, upgrade from representative 0001–0005 data, FTS/data preservation, optimistic conflicts, immutable history, refresh/restart persistence, cursor manipulation/expiry/scope/limits, stable navigation under inserts and updates, and authenticated actor isolation. Frontend and Playwright cover load/error/retry, focus, history, repeated analyses and 390px layout. The standard suites also retain same-origin, strict JSON, UTF-8 size, Auth0, idempotency and feedback append-only checks.
 
 Lead Architect reviews contracts and migration compatibility; AI/RAG reviews frozen evidence and feedback isolation; Platform & Security reviews D1/auth/privacy/bounds; QA & Red Team reviews adversarial navigation, concurrency and keyboard/mobile behavior. Execution results for this delivery are recorded in the PR and final implementation report, not inferred from the historical release validation counts.
+# Delivery B
+
+Private export, retention, recovery rehearsal and quota contracts are specified in [recovery and retention](recovery-retention.md). No deletion or production operation is authorized.
