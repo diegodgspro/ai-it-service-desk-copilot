@@ -1,0 +1,54 @@
+{
+  "format": "deskpilot-recovery-fixture",
+  "version": 1,
+  "classification": "synthetic-only",
+  "ticket": {
+    "id": "INC-DRILL-0001",
+    "title": "Synthetic recovery ticket",
+    "description": "Synthetic VPN symptoms only.",
+    "requester": "Recovery Fixture",
+    "impact": "Low",
+    "urgency": "Low"
+  },
+  "audit": {
+    "ticket_id": "INC-DRILL-0001",
+    "kind": "recovered",
+    "actor": "synthetic-recovery-operator",
+    "detail": "Synthetic recovery rehearsal."
+  },
+  "analysis": {
+    "analysis_id": "analysis-recovery-0001",
+    "ticket_id": "INC-DRILL-0001",
+    "incident_version": 2,
+    "actor": "synthetic-recovery-operator",
+    "analysis_json": "{\"hypothesis\":\"Synthetic hypothesis\",\"priority\":\"P4\"}",
+    "evidence_json": "[]"
+  },
+  "retrieval": {
+    "retrieval_id": "retrieval-recovery-0001",
+    "actor_hash": "synthetic-actor-hash",
+    "retrieval_mode": "lexical",
+    "result_count": 1,
+    "filter_count": 0,
+    "abstained": 0
+  },
+  "item": {
+    "retrieval_id": "retrieval-recovery-0001",
+    "document_id": "kb-network-vpn-troubleshooting",
+    "chunk_id": "kb-network-vpn-troubleshooting--01-symptoms"
+  },
+  "feedback": {
+    "feedback_id": "feedback-recovery-0001",
+    "client_event_id": "event-recovery-0001",
+    "actor_hash": "synthetic-actor-hash",
+    "retrieval_id": "retrieval-recovery-0001",
+    "retrieval_mode": "lexical",
+    "document_id": "kb-network-vpn-troubleshooting",
+    "chunk_id": "kb-network-vpn-troubleshooting--01-symptoms",
+    "citation": "synthetic-citation",
+    "document_version": "1.0",
+    "document_hash": "synthetic-document-hash",
+    "outcome": "helpful",
+    "reason": "relevant"
+  }
+}
