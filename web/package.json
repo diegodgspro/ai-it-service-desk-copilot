@@ -15,6 +15,7 @@
     "build:browser": "npm run sync && node scripts/build-browser.mjs && node scripts/verify-browser-build.mjs",
     "typecheck": "tsc --noEmit",
     "test": "npm run sync && node --test tests/*.test.mjs && npm run test:frontend",
+    "test:recovery": "node --test tests/recovery.test.mjs",
     "db:migrate": "wrangler d1 migrations apply DB --local",
     "dev": "npm run build && npm run db:migrate && npm run knowledge:ingest:local && wrangler dev --local --ip 127.0.0.1 --port 8787 --var APP_ENV:local --var LOCAL_DEV_IDENTITY:enabled",
     "test:browser": "playwright test",

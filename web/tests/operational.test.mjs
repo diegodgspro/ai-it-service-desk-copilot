@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFile, readdir, mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createHmac } from "node:crypto";
+import { createHash, createHmac } from "node:crypto";
 import { build } from "esbuild";
 import { Miniflare, convertV4MiniflareOptions } from "miniflare";
 let mf, db, script, persist;
@@ -417,4 +417,60 @@ test("snapshot failure rolls back ticket update and audit atomically", async () 
     (await query("/tickets/" + id + "/analyze", "POST", { version: 1 })).status,
     200,
   );
+});
+test("private exports are write-only, same-origin, bounded, allowlisted and verifiable", async () => {
+  const body = {
+    dataset: "tickets",
+    format: "deskpilot-export+json;version=1",
+    limit: 2,
+  };
+  const result = await query("/operations/export", "POST", body);
+  assert.equal(result.status, 200);
+  assert.equal(result.data.version, 1);
+  assert.equal(result.data.classification, "private-operational");
+  assert.equal(result.data.recordCount, 2);
+  assert.equal(result.data.records[0].id < result.data.records[1].id, true);
+  assert.match(result.headers.get("x-artifact-sha256"), /^[0-9a-f]{64}$/);
+  const artifact = JSON.stringify(result.data);
+  assert.equal(
+    createHash("sha256").update(artifact).digest("hex"),
+    result.headers.get("x-artifact-sha256"),
+  );
+  assert.notEqual(
+    createHash("sha256").update(artifact.slice(0, -1)).digest("hex"),
+    result.headers.get("x-artifact-sha256"),
+  );
+  assert.notEqual(
+    createHash("sha256")
+      .update(artifact.replace("INC-", "ALTERED-"))
+      .digest("hex"),
+    result.headers.get("x-artifact-sha256"),
+  );
+  for (const invalid of [
+    { ...body, dataset: "knowledge_fts" },
+    { ...body, dataset: "pagination_key" },
+    { ...body, dataset: "secrets" },
+    { ...body, format: "csv" },
+    { ...body, limit: 251 },
+    { ...body, unknown: true },
+  ])
+    assert.equal(
+      (await query("/operations/export", "POST", invalid)).status,
+      400,
+    );
+  assert.equal(
+    (
+      await query("/operations/export", "POST", body, {
+        Origin: "https://evil.invalid",
+      })
+    ).status,
+    403,
+  );
+  assert.ok(
+    [404, 405].includes((await query("/operations/export", "GET")).status),
+  );
+  const capacityResult = await query("/operations/capacity", "POST", {});
+  assert.equal(capacityResult.status, 200);
+  assert.equal(capacityResult.data.officialUsageAvailable, false);
+  assert.equal(capacityResult.data.counts.knowledge_chunks, 0);
 });

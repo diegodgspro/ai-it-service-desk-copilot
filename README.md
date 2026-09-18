@@ -28,7 +28,7 @@ Authenticated users can describe a synthetic IT problem, review a deterministic 
 
 The supplied stable baseline is v1.3.0 at `15ac9d538831a4257a9ca5d36b758cef9bcbff57`; this delivery does not change it. Cloudflare Worker, remote D1 and Auth0 operate together. Earlier v1.2.0 production acceptance on September 13, 2026 confirmed login, all nine existing incidents, VPN and printer evidence, abstention for an irrelevant query, intake, audit, persistence across refresh and logout/login. Migration `0004_enterprise_knowledge_fts.sql` and deterministic ingestion provide 10 approved synthetic documents and 46 stable chunks without changing existing workflows. Cloudflare Access is intentionally not used. Workers Free, D1 Free and Auth0 Free are the cost boundary; no paid fallback is authorized.
 
-See the [v1.2.0 release record](docs/releases/v1.2.0.md), [changelog](CHANGELOG.md) and [deployment and recovery runbook](docs/cloudflare-deployment.md).
+See the [v1.2.0 release record](docs/releases/v1.2.0.md), [changelog](CHANGELOG.md), [deployment runbook](docs/cloudflare-deployment.md), and [private export, retention and recovery contract](docs/recovery-retention.md).
 
 ## Features
 
@@ -106,8 +106,8 @@ No genuine interface captures are committed for this release. Browser tests gene
 
 ## Limitations and roadmap
 
-No multi-tenancy, enterprise SLA, real ITSM adapter, live command execution or unattended resolution. Current analyses persist, but historical analysis bodies are not archived. The queue is capped at 100 records; the UI shows the latest 100 audit events per ticket. Browser cookie restrictions may require another login after reload. Free quotas constrain availability; exhaustion must never trigger paid fallback.
+No multi-tenancy, enterprise SLA, real ITSM adapter, live command execution or unattended resolution. Current and historical analyses persist with bounded cursor pagination for queue, audit and history. Browser cookie restrictions may require another login after reload. Free quotas constrain availability; exhaustion must never trigger paid fallback.
 
-Future work includes pagination and retention, quota/error handling, accessibility review, independent evaluation, a sandbox adapter and an isolated public read-only demonstration. Optional narrative enrichment requires separate free-eligibility and security review. Workers AI is not enabled. [Roadmap](docs/web-roadmap.md).
+The unreleased v1.4 branch adds pagination, retention policy, quota signals, recovery rehearsal and accessibility hardening. Future work includes separately authorized destructive retention, independent evaluation, a sandbox adapter and an isolated public read-only demonstration. Optional narrative enrichment requires separate free-eligibility and security review. Workers AI is not enabled. [Roadmap](docs/web-roadmap.md).
 
 License: MIT. No employer code or real incident data is included.

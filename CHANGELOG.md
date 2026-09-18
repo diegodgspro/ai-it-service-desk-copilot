@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.4.0 delivery B] - Unreleased
+
+- Private same-origin, write-authorized, bounded operational export with deterministic ordering and SHA-256.
+- Application row-count capacity signals, retention policy, deterministic recovery rehearsal and WCAG/responsive hardening.
+- No remote migration, deployment, deletion, paid service, retrieval tuning, tag or release.
+
 All notable changes follow [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The web package uses semantic versioning.
 
 ## [Unreleased] - v1.4.0 Operational Maturity, delivery A

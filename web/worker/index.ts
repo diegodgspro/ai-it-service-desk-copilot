@@ -8,6 +8,7 @@ import { validateRetrievalQuery } from "../shared/knowledge";
 import { D1FtsRetriever } from "./retrieval";
 import { digest, feedbackSummary, recordFeedback } from "./feedback";
 import { logSafeEvent } from "./observability";
+import { capacity, createExport, InvalidOperation } from "./operations";
 import {
   feedbackOutcomes,
   helpfulReasons,
@@ -249,6 +250,54 @@ export default {
           durationMs: Date.now() - started,
         });
         return json(summary);
+      }
+      if (
+        url.pathname === "/api/operations/export" &&
+        request.method === "POST"
+      ) {
+        if (!identity.permissions.includes("write"))
+          return json({ error: "Write permission required" }, 403);
+        const parsed = await parseBody(request);
+        if (parsed.error) return parsed.error;
+        try {
+          const result = await createExport(env.DB, parsed.body),
+            response = json(result.payload);
+          response.headers.set("X-Artifact-SHA256", result.artifactSha256);
+          response.headers.set(
+            "Content-Type",
+            "application/vnd.deskpilot.export+json; version=1",
+          );
+          response.headers.set(
+            "Content-Disposition",
+            `attachment; filename="deskpilot-${result.payload.dataset}-v1.json"`,
+          );
+          logSafeEvent({
+            requestId,
+            route: url.pathname,
+            status: 200,
+            durationMs: Date.now() - started,
+            dataset: result.payload.dataset,
+            records: result.payload.recordCount,
+            bytes: new TextEncoder().encode(result.canonical).byteLength,
+          });
+          return response;
+        } catch (error) {
+          if (error instanceof InvalidOperation)
+            return json({ error: "Invalid export request." }, 400);
+          throw error;
+        }
+      }
+      if (
+        url.pathname === "/api/operations/capacity" &&
+        request.method === "POST"
+      ) {
+        if (!identity.permissions.includes("write"))
+          return json({ error: "Write permission required" }, 403);
+        const parsed = await parseBody(request);
+        if (parsed.error) return parsed.error;
+        if (Object.keys(parsed.body).length)
+          return json({ error: "Invalid capacity request." }, 400);
+        return json(await capacity(env.DB));
       }
       if (url.pathname === "/api/intake/draft" && request.method === "POST") {
         const parsed = await parseBody(request);

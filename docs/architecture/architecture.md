@@ -58,3 +58,11 @@ Operational collections use keyset pagination with a signed initial high waterma
 A successful analysis transaction is `[optimistic UPDATE, gated snapshot INSERT, gated audit INSERT]`. Each insert follows `changes()=1`; a failed optimistic update creates neither record. Snapshot schema version 1 freezes analysis JSON and runbook evidence (title, repository path and content), with resulting incident version, authenticated actor and server timestamp. Contextual FTS evidence retrieved later is separate and does not generate these analyses. Triggers reject historical UPDATE/DELETE. No legacy actor, time or evidence is invented through backfill.
 
 [Operational limits and privacy](../operational-maturity.md) describe the bounded API, live-field versus member-snapshot semantics and feedback suppression. Existing Auth0, byte limits, safe logs, FTS5/BM25 and simulation boundaries are unchanged.
+## v1.4.0 delivery B (unreleased)
+
+Authoritative recovery tables are tickets, audit, analysis history, reviewed knowledge documents/chunks, retrieval events/items and feedback. `knowledge_fts` is a derived D1 FTS5/BM25 index rebuilt from the reviewed corpus, never a backup source. Pagination keys, Auth0 settings, permission maps, tokens, HMAC material and other secrets are excluded.
+
+The export boundary is authenticated `write`, same-origin, allowlisted, versioned, deterministically ordered and bounded by page, period and bytes. SHA-256 and counts make each private artifact verifiable. Recovery uses disposable local/CI D1 twice and validates the expected 46 chunks. Quota reporting is application-observed capacity telemetry, not official Cloudflare billing usage. No new binding, paid service or production action is introduced.
+## v1.4.0 delivery B (unreleased)
+
+Authoritative recovery tables are tickets, audit, analysis history, reviewed knowledge documents/chunks, retrieval events/items and feedback. `knowledge_fts` is a derived D1 FTS5/BM25 index rebuilt from the reviewed corpus, never a backup source. Pagination keys, Auth0 settings, permission maps, tokens, HMAC material and other secrets are excluded. Export is authenticated `write`, same-origin, allowlisted, versioned, deterministically ordered and bounded. Recovery uses disposable local/CI D1 twice and validates 46 chunks. Quota reporting is application-observed, not official billing usage.
