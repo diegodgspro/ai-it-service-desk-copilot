@@ -1,2 +1,17 @@
-type SafeEvent = { requestId:string; route:string; status:number; durationMs:number; resultCount?:number; abstention?:boolean; filterCount?:number; outcome?:string; reason?:string };
-export function logSafeEvent(event: SafeEvent) { console.log(JSON.stringify({ event:"deskpilot_request", ...event })); }
+type SafeEvent = {
+  requestId: string;
+  route: string;
+  status: number;
+  durationMs: number;
+  resultCount?: number;
+  abstention?: boolean;
+  filterCount?: number;
+  outcome?: string;
+  reason?: string;
+  dataset?: string;
+  records?: number;
+  bytes?: number;
+};
+export function logSafeEvent(event: SafeEvent) {
+  console.log(JSON.stringify({ event: "deskpilot_request", ...event }));
+}

@@ -585,7 +585,47 @@ test("Auth0 RS256 authentication and server-side operation grants in workerd/D1"
       async () => {
         const reader = await sign();
         assert.equal((await request(reader)).status, 200);
-        assert.equal((await runtime.dispatchFetch(origin+"/api/knowledge/feedback/summary",{headers:{Authorization:"Bearer "+reader}})).status,403);
+        assert.equal(
+          (
+            await runtime.dispatchFetch(
+              origin + "/api/knowledge/feedback/summary",
+              { headers: { Authorization: "Bearer " + reader } },
+            )
+          ).status,
+          403,
+        );
+        const exportBody = JSON.stringify({
+          dataset: "tickets",
+          format: "deskpilot-export+json;version=1",
+          limit: 1,
+        });
+        const exportRequest = (token, requestOrigin = origin) =>
+          runtime.dispatchFetch(origin + "/api/operations/export", {
+            method: "POST",
+            headers: {
+              Authorization: "Bearer " + token,
+              Origin: requestOrigin,
+              "Content-Type": "application/json",
+            },
+            body: exportBody,
+          });
+        assert.equal(
+          (
+            await runtime.dispatchFetch(origin + "/api/operations/export", {
+              method: "POST",
+              headers: { Origin: origin, "Content-Type": "application/json" },
+              body: exportBody,
+            })
+          ).status,
+          401,
+        );
+        assert.equal((await exportRequest(reader)).status, 403);
+        const exportWriter = await sign({ sub: "auth0|fixture-writer" });
+        assert.equal(
+          (await exportRequest(exportWriter, "https://hostile.invalid")).status,
+          403,
+        );
+        assert.equal((await exportRequest(exportWriter)).status, 200);
         assert.equal(
           (
             await request(
@@ -599,7 +639,15 @@ test("Auth0 RS256 authentication and server-side operation grants in workerd/D1"
           403,
         );
         const writer = await sign({ sub: "auth0|fixture-writer" });
-        assert.equal((await runtime.dispatchFetch(origin+"/api/knowledge/feedback/summary",{headers:{Authorization:"Bearer "+writer}})).status,200);
+        assert.equal(
+          (
+            await runtime.dispatchFetch(
+              origin + "/api/knowledge/feedback/summary",
+              { headers: { Authorization: "Bearer " + writer } },
+            )
+          ).status,
+          200,
+        );
         const {
           data: { ticket },
         } = await request(writer, "GET", undefined, {}, "/INC-1042");
@@ -617,36 +665,84 @@ test("Auth0 RS256 authentication and server-side operation grants in workerd/D1"
         );
         const record = await request(writer, "GET", undefined, {}, "/INC-1042");
         assert.equal(record.data.audit[0].actor, "auth0|fixture-writer");
-        const history = await request(reader, "GET", undefined, {}, "/INC-1042/analyses");
+        const history = await request(
+          reader,
+          "GET",
+          undefined,
+          {},
+          "/INC-1042/analyses",
+        );
         assert.equal(history.status, 200);
         assert.equal(history.data.items[0].actor, "auth0|fixture-writer");
-        assert.equal(history.data.items[0].incident_version, ticket.version + 1);
-        assert.equal(history.data.items[0].analysis_id, record.data.ticket.analysis_id);
+        assert.equal(
+          history.data.items[0].incident_version,
+          ticket.version + 1,
+        );
+        assert.equal(
+          history.data.items[0].analysis_id,
+          record.data.ticket.analysis_id,
+        );
         assert.equal(jwksCalls, 1, "trusted keys are cached per isolate");
       },
     );
-    await t.test("operational pages require grants and cursors are bound to the verified actor", async () => {
-      const reader = await sign();
-      const writer = await sign({ sub: "auth0|fixture-writer" });
-      const unlisted = await sign({ sub: "auth0|unlisted-fixture", permissions: ["read", "write"] });
-      for (const path of ["/page?limit=1", "/INC-1042/audit?limit=1", "/INC-1042/analyses?limit=1"]) {
-        assert.equal((await request(undefined, "GET", undefined, {}, path)).status, 401);
-        assert.equal((await request(unlisted, "GET", undefined, {}, path)).status, 403);
-        const first = await request(reader, "GET", undefined, {}, path);
-        assert.equal(first.status, 200);
-        assert.ok(first.data.nextCursor, "fixture has multiple records for cursor isolation");
-        const nextPath = path + "&cursor=" + encodeURIComponent(first.data.nextCursor);
-        const next = await request(reader, "GET", undefined, {}, nextPath);
-        assert.equal(next.status, 200);
-        assert.notEqual(next.data.items[0].id, first.data.items[0].id);
-        const denied = await request(writer, "GET", undefined, {}, nextPath);
-        assert.equal(denied.status, 400);
-        assert.deepEqual(denied.data, { error: "Invalid pagination request." });
-        assert.equal((await request(reader, "GET", undefined, { "x-user-id": "auth0|fixture-writer" }, nextPath)).status, 401);
-      }
-      for (const path of ["/INC-1042/audit", "/INC-1042/analyses"])
-        assert.equal((await request(reader, "POST", { version: 1 }, {}, path)).status, 403);
-    });
+    await t.test(
+      "operational pages require grants and cursors are bound to the verified actor",
+      async () => {
+        const reader = await sign();
+        const writer = await sign({ sub: "auth0|fixture-writer" });
+        const unlisted = await sign({
+          sub: "auth0|unlisted-fixture",
+          permissions: ["read", "write"],
+        });
+        for (const path of [
+          "/page?limit=1",
+          "/INC-1042/audit?limit=1",
+          "/INC-1042/analyses?limit=1",
+        ]) {
+          assert.equal(
+            (await request(undefined, "GET", undefined, {}, path)).status,
+            401,
+          );
+          assert.equal(
+            (await request(unlisted, "GET", undefined, {}, path)).status,
+            403,
+          );
+          const first = await request(reader, "GET", undefined, {}, path);
+          assert.equal(first.status, 200);
+          assert.ok(
+            first.data.nextCursor,
+            "fixture has multiple records for cursor isolation",
+          );
+          const nextPath =
+            path + "&cursor=" + encodeURIComponent(first.data.nextCursor);
+          const next = await request(reader, "GET", undefined, {}, nextPath);
+          assert.equal(next.status, 200);
+          assert.notEqual(next.data.items[0].id, first.data.items[0].id);
+          const denied = await request(writer, "GET", undefined, {}, nextPath);
+          assert.equal(denied.status, 400);
+          assert.deepEqual(denied.data, {
+            error: "Invalid pagination request.",
+          });
+          assert.equal(
+            (
+              await request(
+                reader,
+                "GET",
+                undefined,
+                { "x-user-id": "auth0|fixture-writer" },
+                nextPath,
+              )
+            ).status,
+            401,
+          );
+        }
+        for (const path of ["/INC-1042/audit", "/INC-1042/analyses"])
+          assert.equal(
+            (await request(reader, "POST", { version: 1 }, {}, path)).status,
+            403,
+          );
+      },
+    );
     await t.test(
       "authentication and token scopes do not grant permissions",
       async () => {
